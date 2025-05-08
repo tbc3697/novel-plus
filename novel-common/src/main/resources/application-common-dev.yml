@@ -26,10 +26,10 @@ http:
     # 是否开启 HTTP 代理，true-开启，false-不开启
     enabled: false
     # 代理 IP
-    ip: us.swiftproxy.net
+    ip: s382.kdlfps.com
     # 代理端口号
-    port: 7878
+    port: 18866
     # 代理用户名
-    username: swiftproxy_u
+    username: f2586745967
     # 代理密码
-    password: swiftproxy_p
+    password: qbgnk0vi

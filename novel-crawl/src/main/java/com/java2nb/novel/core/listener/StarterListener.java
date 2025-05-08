@@ -91,9 +91,7 @@ public class StarterListener implements ServletContextInitializer {
                     }
 
                 }
-            }).start();
-
-
+            }, "autoUpdate_"+i).start();
         }
 
         new Thread(() -> {
@@ -129,6 +127,6 @@ public class StarterListener implements ServletContextInitializer {
                 }
 
             }
-        }).start();
+        }, "singleTask").start();
     }
 }

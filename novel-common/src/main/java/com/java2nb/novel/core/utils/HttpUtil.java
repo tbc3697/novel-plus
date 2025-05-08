@@ -24,8 +24,7 @@ public class HttpUtil {
             log.error("字符编码{}无效！", charset);
             return null;
         }
-        RestTemplate restTemplate = REST_TEMPLATE_MAP.computeIfAbsent(charset,
-            k -> RestTemplates.newInstance(charset));
+        RestTemplate restTemplate = REST_TEMPLATE_MAP.computeIfAbsent(charset, k -> RestTemplates.newInstance(charset));
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.add("user-agent",

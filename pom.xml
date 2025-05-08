@@ -90,28 +90,28 @@
     <!-- 另外需要注意的是，由于镜像仓库完全屏蔽了被镜像仓库，当镜像仓库不稳定或者停止服务的时候，
     Maven仍将无法访问被镜像仓库，因而将无法下载依赖。-->
     <repositories>
-        <repository>
-            <id>ali</id>
-            <url>https://maven.aliyun.com/repository/public</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
+<!--        <repository>-->
+<!--            <id>ali</id>-->
+<!--            <url>https://maven.aliyun.com/repository/public</url>-->
+<!--            <releases>-->
+<!--                <enabled>true</enabled>-->
+<!--            </releases>-->
+<!--            <snapshots>-->
+<!--                <enabled>false</enabled>-->
+<!--            </snapshots>-->
+<!--        </repository>-->
     </repositories>
     <pluginRepositories>
-        <pluginRepository>
-            <id>ali-plugin</id>
-            <url>https://maven.aliyun.com/repository/public</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
+<!--        <pluginRepository>-->
+<!--            <id>ali-plugin</id>-->
+<!--            <url>https://maven.aliyun.com/repository/public</url>-->
+<!--            <releases>-->
+<!--                <enabled>true</enabled>-->
+<!--            </releases>-->
+<!--            <snapshots>-->
+<!--                <enabled>false</enabled>-->
+<!--            </snapshots>-->
+<!--        </pluginRepository>-->
     </pluginRepositories>
 
     <profiles>

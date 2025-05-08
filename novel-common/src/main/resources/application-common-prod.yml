@@ -7,9 +7,9 @@ spring:
   data:
     redis:
       #Redis服务器IP
-      host: www.tbc.pub
+      host: 192.168.31.2
       #Redis服务器连接端口
-      port: 19736
+      port: 6379
       #Redis服务器连接密码
       password: 1234
       #连接超时时间（毫秒）
@@ -28,14 +28,26 @@ content:
     path: /Users/xiongxiaoyang/books  #txt小说文本保存路径
 
 # HTTP 代理配置
+#http:
+#  proxy:
+#    # 是否开启 HTTP 代理，true-开启，false-不开启
+#    enabled: false
+#    # 代理 IP
+#    ip: 40.83.102.86
+#    # 代理端口号
+#    port: 80
+# HTTP 代理配置
 http:
   proxy:
     # 是否开启 HTTP 代理，true-开启，false-不开启
-    enabled: false
+    enabled: true
     # 代理 IP
-    ip: 40.83.102.86
+    ip: s382.kdlfps.com
     # 代理端口号
-    port: 80
-
+    port: 18866
+    # 代理用户名
+    username: f2586745967
+    # 代理密码
+    password: qbgnk0vi
 
 
