@@ -8,9 +8,9 @@ logging:
     com.java2nb: debug
 spring:
   redis:
-    host: 127.0.0.1
-    port: 6379
-    password: test123456
+    host: www.tbc.pub
+    port: 19736
+    password: 1234
     # 连接超时时间（毫秒）
     timeout: 10000
 
