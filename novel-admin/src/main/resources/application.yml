@@ -1,5 +1,6 @@
 server:
-  session-timeout: 18000
+  # def : 18000(5h) / 86400(24h)
+  session-timeout: 86400
   #    tomcat:
   #        max-threads: 1000
   #        min-spare-threads: 30

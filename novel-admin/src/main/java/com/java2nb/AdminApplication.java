@@ -20,7 +20,7 @@ import java.sql.Connection;
 @ServletComponentScan
 @MapperScan("com.java2nb.*.dao")
 @SpringBootApplication(exclude = {
-    org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
+        org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration.class
 })
 @EnableCaching
 @Slf4j
@@ -40,8 +40,8 @@ public class AdminApplication {
                 log.info("数据库版本：{}", connection.getMetaData().getDatabaseProductVersion());
             }
             log.info("项目启动啦，访问路径：{}",
-                "http://" + InetAddress.getLocalHost().getHostAddress() + ":" + ctx.getEnvironment()
-                    .getProperty("server.port"));
+                    "http://" + InetAddress.getLocalHost().getHostAddress() + ":" + ctx.getEnvironment().getProperty("server.port")
+            );
         };
     }
 }
