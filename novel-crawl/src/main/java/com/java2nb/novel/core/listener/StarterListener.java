@@ -42,91 +42,108 @@ public class StarterListener implements ServletContextInitializer {
 
     @Override
     public void onStartup(ServletContext servletContext) {
+        // 更新小说
         for (int i = 0; i < updateThreadCount; i++) {
-            new Thread(() -> {
-                log.info("程序启动,开始执行自动更新线程。。。");
-                while (true) {
-                    try {
-                        //1.查询最新目录更新时间在一个月之内的前100条需要更新的数据
-                        Date currentDate = new Date();
-                        Date startDate = DateUtils.addDays(currentDate, -30);
-                        List<Book> bookList;
-                        synchronized (this) {
-                            bookList = bookService.queryNeedUpdateBook(startDate, 100);
-                        }
-                        for (Book needUpdateBook : bookList) {
-                            try {
-                                //查询爬虫源规则
-                                CrawlSource source = crawlService.queryCrawlSource(needUpdateBook.getCrawlSourceId());
-                                RuleBean ruleBean = new ObjectMapper().readValue(source.getCrawlRule(), RuleBean.class);
-                                //解析小说基本信息
-                                crawlParser.parseBook(ruleBean, needUpdateBook.getCrawlBookId(), book -> {
-                                    //这里只做老书更新
-                                    book.setId(needUpdateBook.getId());
-                                    book.setWordCount(needUpdateBook.getWordCount());
-                                    if (needUpdateBook.getPicUrl() != null && needUpdateBook.getPicUrl()
-                                        .contains(Constants.LOCAL_PIC_PREFIX)) {
-                                        //本地图片则不更新
-                                        book.setPicUrl(null);
-                                    }
-                                    //查询已存在的章节
-                                    Map<Integer, BookIndex> existBookIndexMap = bookService.queryExistBookIndexMap(
-                                        needUpdateBook.getId());
-                                    //解析章节目录
-                                    crawlParser.parseBookIndexAndContent(needUpdateBook.getCrawlBookId(), book,
-                                        ruleBean, existBookIndexMap, chapter -> {
-                                            bookService.updateBookAndIndexAndContent(book, chapter.getBookIndexList(),
-                                                chapter.getBookContentList(), existBookIndexMap);
-                                        });
-                                });
-                            } catch (Exception e) {
-                                log.error(e.getMessage(), e);
-                            }
-
-                        }
-                        //  休眠10分钟
-                        TimeUnit.MINUTES.sleep(10);
-                    } catch (Exception e) {
-                        log.error(e.getMessage(), e);
-                    }
-
-                }
-            }, "autoUpdate_"+i).start();
+            new Thread(this::updateBook, "autoUpdate_" + i).start();
         }
 
-        new Thread(() -> {
-            log.info("程序启动,开始执行单本采集任务线程。。。");
-            while (true) {
-                CrawlSingleTask task = null;
-                byte crawlStatus = 0;
-                try {
-                    //获取采集任务
-                    task = crawlService.getCrawlSingleTask();
+        // 执行单本书任务
+        new Thread(this::singleTask, "singleTask").start();
+    }
 
-                    if (task != null) {
-                        //查询爬虫规则
-                        CrawlSource source = crawlService.queryCrawlSource(task.getSourceId());
-                        RuleBean ruleBean = new ObjectMapper().readValue(source.getCrawlRule(), RuleBean.class);
+    private void updateBook() {
+        log.info("程序启动,开始执行自动更新线程。。。");
+        foreverRun(this::doUpdateBook);
+    }
 
-                        if (crawlService.parseBookAndSave(task.getCatId(), ruleBean, task.getSourceId(),
-                            task.getSourceBookId())) {
-                            //采集成功
-                            crawlStatus = 1;
-                        }
+    private void singleTask() {
+        log.info("程序启动,开始执行单本采集任务线程。。。");
+        foreverRun(this::doSingleTask);
+    }
 
-                    }
+    private void foreverRun(Runnable runner) {
+        while (true) {
+            try {
+                runner.run();
+            } catch (Throwable e) {
+                log.error("singleTask exec fail, msg={}", e.getMessage(), e);
+            }
+        }
+    }
 
-                    //休眠1分钟
-                    TimeUnit.MINUTES.sleep(1);
+    private void doSingleTask() {
+        CrawlSingleTask task = null;
+        byte crawlStatus = 0;
+        try {
+            // 获取采集任务
+            task = crawlService.getCrawlSingleTask();
 
-                } catch (Exception e) {
-                    log.error(e.getMessage(), e);
-                }
-                if (task != null) {
-                    crawlService.updateCrawlSingleTask(task, crawlStatus);
+            if (task != null) {
+                // 查询爬虫规则
+                CrawlSource source = crawlService.queryCrawlSource(task.getSourceId());
+                RuleBean ruleBean = new ObjectMapper().readValue(source.getCrawlRule(), RuleBean.class);
+
+                if (crawlService.parseBookAndSave(task.getCatId(), ruleBean, task.getSourceId(), task.getSourceBookId())) {
+                    // 采集成功
+                    crawlStatus = 1;
                 }
 
             }
-        }, "singleTask").start();
+
+            // 休眠1分钟
+            TimeUnit.MINUTES.sleep(1);
+
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
+        if (task != null) {
+            crawlService.updateCrawlSingleTask(task, crawlStatus);
+        }
+    }
+
+    private void doUpdateBook() {
+        try {
+            // 1.查询最新目录更新时间在一个月之内的前100条需要更新的数据
+            Date currentDate = new Date();
+            Date startDate = DateUtils.addDays(currentDate, -30);
+            List<Book> bookList;
+            synchronized (this) {
+                bookList = bookService.queryNeedUpdateBook(startDate, 100);
+            }
+            for (Book needUpdateBook : bookList) {
+                try {
+                    // 查询爬虫源规则
+                    CrawlSource source = crawlService.queryCrawlSource(needUpdateBook.getCrawlSourceId());
+                    RuleBean ruleBean = new ObjectMapper().readValue(source.getCrawlRule(), RuleBean.class);
+                    // 解析小说基本信息
+                    crawlParser.parseBook(ruleBean, needUpdateBook.getCrawlBookId(), book -> {
+                        // 这里只做老书更新
+                        book.setId(needUpdateBook.getId());
+                        book.setWordCount(needUpdateBook.getWordCount());
+                        if (needUpdateBook.getPicUrl() != null && needUpdateBook.getPicUrl()
+                                .contains(Constants.LOCAL_PIC_PREFIX)) {
+                            // 本地图片则不更新
+                            book.setPicUrl(null);
+                        }
+                        // 查询已存在的章节
+                        Map<Integer, BookIndex> existBookIndexMap = bookService.queryExistBookIndexMap(
+                                needUpdateBook.getId());
+                        // 解析章节目录
+                        crawlParser.parseBookIndexAndContent(needUpdateBook.getCrawlBookId(), book,
+                                ruleBean, existBookIndexMap, chapter -> {
+                                    bookService.updateBookAndIndexAndContent(book, chapter.getBookIndexList(),
+                                            chapter.getBookContentList(), existBookIndexMap);
+                                });
+                    });
+                } catch (Exception e) {
+                    log.error(e.getMessage(), e);
+                }
+
+            }
+            //  休眠10分钟
+            TimeUnit.MINUTES.sleep(10);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+        }
     }
 }
