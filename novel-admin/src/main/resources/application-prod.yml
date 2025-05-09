@@ -8,8 +8,8 @@ logging:
     com.java2nb: error
 spring:
   redis:
-    host: www.tbc.pub
-    port: 19736
+    host: 192.168.31.2
+    port: 6379
     password: 1234
     # 连接超时时间（毫秒）
     timeout: 10000
