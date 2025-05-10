@@ -142,6 +142,9 @@ public class CrawlServiceImpl implements CrawlService {
                 Set<Long> threadIds = new HashSet<>();
                 //按分类开始爬虫解析任务
                 for (int i = 1; i < 8; i++) {
+                    if (i != 7) {
+                        continue;
+                    }
                     final int catId = i;
                     Thread thread = new Thread(() -> CrawlServiceImpl.this.parseBookList(catId, ruleBean, sourceId), "craw_"+sourceId+"_" + i);
                     thread.start();
