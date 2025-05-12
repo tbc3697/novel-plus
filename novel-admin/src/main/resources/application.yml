@@ -10,9 +10,9 @@ server:
 #  basic:
 #    enabled: false
 spring:
-  datasource:
-    driverClassName: org.apache.shardingsphere.driver.ShardingSphereDriver
-    url: jdbc:shardingsphere:absolutepath:${user.dir}/config/shardingsphere-jdbc.yml
+#  datasource:
+#    driverClassName: org.apache.shardingsphere.driver.ShardingSphereDriver
+#    url: jdbc:shardingsphere:absolutepath:${user.dir}/config/shardingsphere-jdbc.yml
   thymeleaf:
     mode: LEGACYHTML5
     cache: false

@@ -13,5 +13,7 @@ spring:
     password: 1234
     # 连接超时时间（毫秒）
     timeout: 10000
-
+  datasource:
+    driverClassName: org.apache.shardingsphere.driver.ShardingSphereDriver
+    url: jdbc:shardingsphere:absolutepath:${user.dir}/config/shardingsphere-jdbc-dev.yml
 

@@ -82,7 +82,7 @@ public class CrawlServiceImpl implements CrawlService {
             if (opt.isPresent()) {
                 CrawlSource crawlSource = opt.get();
                 if (crawlSource.getSourceStatus() == (byte) 1) {
-                    //关闭
+                    // 关闭
                     openOrCloseCrawl(crawlSource.getId(), (byte) 0);
                 }
                 Date currentDate = new Date();
@@ -112,11 +112,11 @@ public class CrawlServiceImpl implements CrawlService {
     @Override
     public void openOrCloseCrawl(Integer sourceId, Byte sourceStatus) {
 
-        //判断是开启还是关闭，如果是关闭，则修改数据库状态后获取该爬虫正在运行的线程集合并全部停止
-        //如果是开启，先查询数据库中状态，判断该爬虫源是否还在运行，如果在运行，则忽略，
+        // 判断是开启还是关闭，如果是关闭，则修改数据库状态后获取该爬虫正在运行的线程集合并全部停止
+        // 如果是开启，先查询数据库中状态，判断该爬虫源是否还在运行，如果在运行，则忽略，
         // 如果没有则修改数据库状态，并启动线程爬取小说数据加入到runningCrawlThread中
         if (sourceStatus == (byte) 0) {
-            //关闭,直接修改数据库状态，并直接修改数据库状态后获取该爬虫正在运行的线程集合全部停止
+            // 关闭,直接修改数据库状态，并直接修改数据库状态后获取该爬虫正在运行的线程集合全部停止
             SpringUtil.getBean(CrawlService.class).updateCrawlSourceStatus(sourceId, sourceStatus);
             Set<Long> runningCrawlThreadId = (Set<Long>) cacheService.getObject(CacheKey.RUNNING_CRAWL_THREAD_KEY_PREFIX + sourceId);
             if (runningCrawlThreadId != null) {
@@ -127,28 +127,27 @@ public class CrawlServiceImpl implements CrawlService {
                     }
                 }
             }
-
         } else {
-            //开启
-            //查询爬虫源状态和规则
+            // 开启
+            // 查询爬虫源状态和规则
             CrawlSource source = queryCrawlSource(sourceId);
             Byte realSourceStatus = source.getSourceStatus();
 
             if (realSourceStatus == (byte) 0) {
-                //该爬虫源已经停止运行了,修改数据库状态，并启动线程爬取小说数据加入到runningCrawlThread中
+                // 该爬虫源已经停止运行了,修改数据库状态，并启动线程爬取小说数据加入到runningCrawlThread中
                 SpringUtil.getBean(CrawlService.class).updateCrawlSourceStatus(sourceId, sourceStatus);
                 RuleBean ruleBean = new ObjectMapper().readValue(source.getCrawlRule(), RuleBean.class);
 
                 Set<Long> threadIds = new HashSet<>();
-                //按分类开始爬虫解析任务
+                // 按分类开始爬虫解析任务
                 for (int i = 1; i < 8; i++) {
                     if (i != 7) {
                         continue;
                     }
                     final int catId = i;
-                    Thread thread = new Thread(() -> CrawlServiceImpl.this.parseBookList(catId, ruleBean, sourceId), "craw_"+sourceId+"_" + i);
+                    Thread thread = new Thread(() -> CrawlServiceImpl.this.parseBookList(catId, ruleBean, sourceId), "craw_" + sourceId + "_" + i);
                     thread.start();
-                    //thread加入到监控缓存中
+                    // thread加入到监控缓存中
                     threadIds.add(thread.getId());
                 }
                 cacheService.setObject(CacheKey.RUNNING_CRAWL_THREAD_KEY_PREFIX + sourceId, threadIds);
@@ -221,7 +220,7 @@ public class CrawlServiceImpl implements CrawlService {
         excCount += 1;
         task.setExcCount(excCount);
         if (status == 1 || excCount == 5) {
-            //当采集成功或者采集次数等于5，则更新采集最终状态，并停止采集
+            // 当采集成功或者采集次数等于5，则更新采集最终状态，并停止采集
             task.setTaskStatus(status);
         }
         crawlSingleTaskMapper.updateByPrimaryKeySelective(task);
@@ -244,14 +243,11 @@ public class CrawlServiceImpl implements CrawlService {
     @Override
     public void parseBookList(int catId, RuleBean ruleBean, Integer sourceId) {
 
-        //当前页码1
+        // 当前页码1
         int page = 1;
         int totalPage = page;
 
         while (page <= totalPage) {
-            // if (Thread.currentThread().isInterrupted()) {
-            //     return;
-            // }
             try {
                 String catIdRule = ruleBean.getCatIdRule().get("catId" + catId);
                 if (StringUtils.isNotBlank(catIdRule)) {
@@ -276,12 +272,11 @@ public class CrawlServiceImpl implements CrawlService {
                         boolean isFindBookId = bookIdMatcher.find();
                         while (isFindBookId) {
                             try {
-                                //1.阻塞过程（使用了 sleep,同步锁的 wait,socket 中的 receiver,accept 等方法时）
-                                //捕获中断异常InterruptedException来退出线程。
-                                //2.非阻塞过程中通过判断中断标志来退出线程。
-                               if (Thread.currentThread().isInterrupted()) {
-                                   return;
-                               }
+                                // 1.阻塞过程（使用了 sleep,同步锁的 wait,socket 中的 receiver,accept 等方法时）捕获中断异常InterruptedException来退出线程。
+                                // 2.非阻塞过程中通过判断中断标志来退出线程。
+                                if (Thread.currentThread().isInterrupted()) {
+                                    return;
+                                }
 
                                 String bookId = bookIdMatcher.group(1);
                                 parseBookAndSave(catId, ruleBean, sourceId, bookId);
@@ -324,26 +319,26 @@ public class CrawlServiceImpl implements CrawlService {
             if (book.getBookName() == null || book.getAuthorName() == null) {
                 return;
             }
-            //这里只做新书入库，查询是否存在这本书
+            // 这里只做新书入库，查询是否存在这本书
             Book existBook = bookService.queryBookByBookNameAndAuthorName(book.getBookName(), book.getAuthorName());
-            //如果该小说不存在，则可以解析入库，但是标记该小说正在入库，30分钟之后才允许再次入库
+            // 如果该小说不存在，则可以解析入库，但是标记该小说正在入库，30分钟之后才允许再次入库
             if (existBook == null) {
-                //没有该书，可以入库
+                // 没有该书，可以入库
                 book.setCatId(catId);
-                //根据分类ID查询分类
+                // 根据分类ID查询分类
                 book.setCatName(bookService.queryCatNameByCatId(catId));
                 if (catId == 7) {
-                    //女频
+                    // 女频
                     book.setWorkDirection((byte) 1);
                 } else {
-                    //男频
+                    // 男频
                     book.setWorkDirection((byte) 0);
                 }
                 book.setCrawlBookId(bookId);
                 book.setCrawlSourceId(sourceId);
                 book.setCrawlLastTime(new Date());
                 book.setId(idWorker.nextId());
-                //解析章节目录
+                // 解析章节目录
                 boolean parseIndexContentResult = crawlParser.parseBookIndexAndContent(bookId, book, ruleBean,
                         new HashMap<>(0), chapter -> {
                             bookService.saveBookAndIndexAndContent(book, chapter.getBookIndexList(),
@@ -352,7 +347,7 @@ public class CrawlServiceImpl implements CrawlService {
                 parseResult.set(parseIndexContentResult);
 
             } else {
-                //只更新书籍的爬虫相关字段
+                // 只更新书籍的爬虫相关字段
                 bookService.updateCrawlProperties(existBook.getId(), sourceId, bookId);
                 parseResult.set(true);
             }
