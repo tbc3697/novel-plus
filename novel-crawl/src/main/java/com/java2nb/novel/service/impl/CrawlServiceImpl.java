@@ -139,21 +139,32 @@ public class CrawlServiceImpl implements CrawlService {
                 RuleBean ruleBean = new ObjectMapper().readValue(source.getCrawlRule(), RuleBean.class);
 
                 Set<Long> threadIds = new HashSet<>();
+
+                var catIdRule = ruleBean.getCatIdRule();
+                if (catIdRule == null || catIdRule.isEmpty()) {
+                    return;
+                }
                 // 按分类开始爬虫解析任务
-                for (int i = 1; i < 8; i++) {
-                    if (i != 7) {
-                        continue;
-                    }
-                    final int catId = i;
-                    Thread thread = new Thread(() -> CrawlServiceImpl.this.parseBookList(catId, ruleBean, sourceId), "craw_" + sourceId + "_" + i);
+                catIdRule.forEach((catIdStr, catIdRuleValue) -> {
+                    final int catId = parseCatId(catIdStr);
+                    Thread thread = new Thread(() -> CrawlServiceImpl.this.parseBookList(catId, ruleBean, sourceId), "craw_" + sourceId + "_" + catId);
                     thread.start();
                     // thread加入到监控缓存中
                     threadIds.add(thread.getId());
-                }
+                });
                 cacheService.setObject(CacheKey.RUNNING_CRAWL_THREAD_KEY_PREFIX + sourceId, threadIds);
             }
         }
 
+    }
+
+    private int parseCatId(String catIdStr) {
+        try {
+            return Integer.parseInt(catIdStr.replace("catId", ""));
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Override
