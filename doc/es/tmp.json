@@ -1,0 +1,35 @@
+{
+  "bookListUrl": "https://crxs.me/fictions/tag-{catId}/{page}.html",
+  "catIdRule": {
+    "catId1": "编辑推荐",
+    "catId2": "人妻女友",
+    "catId3": "强暴性虐",
+    "catId4": "绿帽主题",
+    "catId5": "都市生活",
+    "catId6": "学生校园",
+    "catId7": "公司职场"
+  },
+  "bookIdPatten": "href=\"/fiction/id-^[a-z0-9].html",
+  "pagePatten": "<a href=\"/fictions/tag-(.*)/(\\d+).html\" current=\"true\">(\\d+)</a>",
+  "totalPagePatten": "... <a href=\"/fictions/tag-(.*)/(\\d+).html\">(\\d+)</a>",
+  "bookDetailUrl": "https://crxs.me/fiction/id-{bookId}.html",
+  "bookNamePatten": "<div class=\"title\">([^/]+)</div>",
+  "authorNamePatten": "作者：<a href=\"/fictions/keyword-([^/]+).html\">([^/]+)</a>",
+  "picUrlPatten": "",
+  "statusPatten": "<span>状态：([^/]+)</span>",
+  "bookStatusRule": {
+    "连载": 0,
+    "已经完本": 1
+  },
+  "descStart": "<div class=\"brief\">",
+  "descEnd": "</div>",
+  "upadateTimePatten": "",
+  "upadateTimeFormatPatten": "",
+  "bookIndexUrl": "https://crxs.me/fiction/id-{bookId}.html",
+  "indexIdPatten": "<a href=\"/fiction/id-([^/]+)/(\\d+).html\">",
+  "indexNamePatten": "<div class=\"tag\">([^/]+)</div>",
+  "bookContentUrl": "https://crxs.me/fiction/id-{bookId}/{indexId}.html",
+  "contentStart": "<div class=\"content\">",
+  "contentEnd": "</div>",
+  "filterContent": ""
+}
