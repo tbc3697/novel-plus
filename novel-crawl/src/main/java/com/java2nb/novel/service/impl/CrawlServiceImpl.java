@@ -262,18 +262,7 @@ public class CrawlServiceImpl implements CrawlService {
             try {
                 String catIdRule = ruleBean.getCatIdRule().get("catId" + catId);
                 if (StringUtils.isNotBlank(catIdRule)) {
-                    String catBookListUrl = "";
-                    if (StringUtils.isNotBlank(ruleBean.getBookListUrl())) {
-                        // 兼容老规则
-                        // 拼接分类URL
-                        catBookListUrl = ruleBean.getBookListUrl()
-                                .replace("{catId}", catIdRule)
-                                .replace("{page}", page + "");
-                    } else {
-                        // 新规则
-                        // 拼接分类URL
-                        catBookListUrl = catIdRule.replace("{page}", page + "");
-                    }
+                    String catBookListUrl = extractBookUrl(ruleBean, catIdRule, page);
                     log.info("catBookListUrl：{}", catBookListUrl);
 
                     String bookListHtml = crawlHttpClient.get(catBookListUrl, ruleBean.getCharset());
@@ -352,8 +341,7 @@ public class CrawlServiceImpl implements CrawlService {
                 // 解析章节目录
                 boolean parseIndexContentResult = crawlParser.parseBookIndexAndContent(bookId, book, ruleBean,
                         new HashMap<>(0), chapter -> {
-                            bookService.saveBookAndIndexAndContent(book, chapter.getBookIndexList(),
-                                    chapter.getBookContentList());
+                            bookService.saveBookAndIndexAndContent(book, chapter.getBookIndexList(), chapter.getBookContentList());
                         });
                 parseResult.set(parseIndexContentResult);
 
@@ -385,5 +373,20 @@ public class CrawlServiceImpl implements CrawlService {
                 .build()
                 .render(RenderingStrategies.MYBATIS3);
         return crawlSourceMapper.selectMany(render);
+    }
+
+
+    private String extractBookUrl(RuleBean ruleBean, String catIdRule, int page) {
+        if (StringUtils.isNotBlank(ruleBean.getBookListUrl())) {
+            // 兼容老规则
+            // 拼接分类URL
+            return ruleBean.getBookListUrl()
+                    .replace("{catId}", catIdRule)
+                    .replace("{page}", page + "");
+        } else {
+            // 新规则
+            // 拼接分类URL
+            return catIdRule.replace("{page}", page + "");
+        }
     }
 }

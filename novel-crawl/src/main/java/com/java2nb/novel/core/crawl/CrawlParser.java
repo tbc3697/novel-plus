@@ -186,8 +186,7 @@ public class CrawlParser {
                     int calStart = bookContentUrl.indexOf("{cal_");
                     if (calStart != -1) {
                         //内容页URL需要进行计算才能得到
-                        String calStr = bookContentUrl.substring(calStart,
-                            calStart + bookContentUrl.substring(calStart).indexOf("}"));
+                        String calStr = bookContentUrl.substring(calStart, calStart + bookContentUrl.substring(calStart).indexOf("}"));
                         String[] calArr = calStr.split("_");
                         int calType = Integer.parseInt(calArr[1]);
                         if (calType == 1) {
@@ -212,14 +211,14 @@ public class CrawlParser {
 
                     }
 
-                    String contentUrl = bookContentUrl.replace("{bookId}", sourceBookId)
-                        .replace("{indexId}", sourceIndexId);
+                    String contentUrl = bookContentUrl
+                            .replace("{bookId}", sourceBookId)
+                            .replace("{indexId}", sourceIndexId);
 
                     //查询章节内容
                     String contentHtml = crawlHttpClient.get(contentUrl, ruleBean.getCharset());
                     if (contentHtml != null && !contentHtml.contains("正在手打中")) {
-                        String content = contentHtml.substring(
-                            contentHtml.indexOf(ruleBean.getContentStart()) + ruleBean.getContentStart().length());
+                        String content = contentHtml.substring(contentHtml.indexOf(ruleBean.getContentStart()) + ruleBean.getContentStart().length());
                         content = content.substring(0, content.indexOf(ruleBean.getContentEnd()));
                         // 小说内容过滤
                         String filterContent = ruleBean.getFilterContent();
