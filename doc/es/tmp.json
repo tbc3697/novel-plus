@@ -9,7 +9,7 @@
     "catId6": "学生校园",
     "catId7": "公司职场"
   },
-  "bookIdPatten": "href=\"/fiction/id-^[a-z0-9].html",
+  "bookIdPatten": "href=\"/fiction/id-([^/]+).html",
   "pagePatten": "<a href=\"/fictions/tag-(.*)/(\\d+).html\" current=\"true\">(\\d+)</a>",
   "totalPagePatten": "... <a href=\"/fictions/tag-(.*)/(\\d+).html\">(\\d+)</a>",
   "bookDetailUrl": "https://crxs.me/fiction/id-{bookId}.html",

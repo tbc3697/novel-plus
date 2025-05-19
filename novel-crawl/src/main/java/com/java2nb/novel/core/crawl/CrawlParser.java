@@ -180,8 +180,8 @@ public class CrawlParser {
 
                 if (hasIndex == null || !StringUtils.deleteWhitespace(hasIndex.getIndexName())
                     .equals(StringUtils.deleteWhitespace(indexName))) {
-
-                    String sourceIndexId = indexIdMatch.group(1);
+                    // TODO 临时适配
+                    String sourceIndexId = indexIdMatch.group(2);
                     String bookContentUrl = ruleBean.getBookContentUrl();
                     int calStart = bookContentUrl.indexOf("{cal_");
                     if (calStart != -1) {
