@@ -30,6 +30,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 @RequiredArgsConstructor
 @Controller
 public class PageController extends BaseController {
+    private final List<String> PRIVILEGE_USER_LIST = List.of("admin", "root", "15652283697");
 
     private final BookService bookService;
 
@@ -271,10 +272,10 @@ public class PageController extends BaseController {
 
         //判断用户是否需要购买线程，该线程在加载小说章节信息线程执行完毕后才执行
         CompletableFuture<Boolean> needBuyCompletableFuture = bookIndexCompletableFuture.thenApplyAsync((bookIndex) -> {
+            UserDetails user = getUserDetails(request);
             //判断该目录是否收费
-            if (bookIndex.getIsVip() != null && bookIndex.getIsVip() == 1) {
+            if (bookIndex.getIsVip() != null && bookIndex.getIsVip() == 1 && nonPrivilegeUser(user)) {
                 //收费
-                UserDetails user = getUserDetails(request);
                 if (user == null) {
                     //未登录，需要购买
                     return true;
@@ -347,6 +348,14 @@ public class PageController extends BaseController {
             model.addAttribute("author", author);
         }
         return "author/register";
+    }
+
+    private boolean privilegeUser(UserDetails user) {
+        return PRIVILEGE_USER_LIST.contains(user.getUsername());
+    }
+
+    private boolean nonPrivilegeUser(UserDetails user) {
+        return !privilegeUser(user);
     }
 
 
