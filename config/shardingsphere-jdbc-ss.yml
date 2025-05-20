@@ -14,10 +14,12 @@ dataSources:
     jdbcUrl: jdbc:mysql://www.tbc.pub:16033/novel_plus_ss?allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
     username: novel
     password: 123456
-    maximumPoolSize: 50
-    minimumIdle: 5
-    idleTimeout: 1800000
-    maxLifetime: 3600000
+#    minimumIdle: 5
+#    maximumPoolSize: 10
+#    idleTimeout: 600000
+#    maxLifetime: 3600000
+#    connectionTestQuery: select 1
+    keepaliveTime: 300000
   ds_2:
     dataSourceClassName: com.zaxxer.hikari.HikariDataSource
     driverClassName: com.mysql.cj.jdbc.Driver
