@@ -291,7 +291,8 @@ public class CrawlServiceImpl implements CrawlService {
                         Matcher totalPageMatcher = totalPagePatten.matcher(bookListHtml);
                         boolean isFindTotalPage = totalPageMatcher.find();
                         if (isFindTotalPage) {
-                            totalPage = Integer.parseInt(totalPageMatcher.group(1));
+                            // todo
+                            totalPage = Integer.parseInt(totalPageMatcher.group(2));
                         }
 
                     }
