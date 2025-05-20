@@ -14,7 +14,7 @@ dataSources:
     jdbcUrl: jdbc:mysql://www.tbc.pub:16033/novel_plus_ss?allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
     username: novel
     password: 123456
-    maximumPoolSize: 100
+    maximumPoolSize: 50
     minimumIdle: 20
   ds_2:
     dataSourceClassName: com.zaxxer.hikari.HikariDataSource
