@@ -112,8 +112,9 @@ public class BookController extends BaseController {
      */
     @GetMapping("listRank")
     public RestResult<List<Book>> listRank(@RequestParam(value = "type", defaultValue = "0") Byte type,
-                                           @RequestParam(value = "limit", defaultValue = "30") Integer limit) {
-        return RestResult.ok(bookService.listRank(type, limit));
+                                           @RequestParam(value = "limit", defaultValue = "30") Integer limit,
+                                           HttpServletRequest request) {
+        return privilegeRuleRun(request, ()->bookService.listRank(type, limit));
     }
 
     /**
@@ -146,8 +147,9 @@ public class BookController extends BaseController {
      * 根据分类id查询同类推荐书籍
      */
     @GetMapping("listRecBookByCatId")
-    public RestResult<List<Book>> listRecBookByCatId(Integer catId) {
-        return RestResult.ok(bookService.listRecBookByCatId(catId));
+    public RestResult<List<Book>> listRecBookByCatId(Integer catId, HttpServletRequest request) {
+        // return RestResult.ok(bookService.listRecBookByCatId(catId));
+        return privilegeRuleRun(request, ()->bookService.listRecBookByCatId(catId));
     }
 
 
@@ -178,8 +180,9 @@ public class BookController extends BaseController {
      * 根据小说ID查询小说前十条最新更新目录集合
      */
     @GetMapping("queryNewIndexList")
-    public RestResult<List<BookIndex>> queryNewIndexList(Long bookId) {
-        return RestResult.ok(bookService.queryIndexList(bookId, "index_num desc", 1, 10));
+    public RestResult<List<BookIndex>> queryNewIndexList(Long bookId, HttpServletRequest request) {
+        // return RestResult.ok(bookService.queryIndexList(bookId, "index_num desc", 1, 10));
+        return privilegeRuleRun(request, ()->bookService.queryIndexList(bookId, "index_num desc", 1, 10));
     }
 
     /**

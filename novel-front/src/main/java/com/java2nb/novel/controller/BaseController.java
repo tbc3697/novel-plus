@@ -22,7 +22,7 @@ public class BaseController {
 
 
     protected boolean privilegeUser(UserDetails user) {
-        return PRIVILEGE_USER_LIST.contains(user.getUsername());
+        return user != null && PRIVILEGE_USER_LIST.contains(user.getUsername());
     }
 
     protected boolean nonPrivilegeUser(UserDetails user) {
