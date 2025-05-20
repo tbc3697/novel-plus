@@ -93,7 +93,7 @@ public class BookController extends BaseController {
                                       HttpServletRequest request) {
         // return RestResult.ok(bookService.searchByPage(bookSP, page, pageSize));
         if (nonPrivilegeUser(request)) {
-            return RestResult.ok(new Object());
+            return RestResult.ok();
         }
         return RestResult.ok(bookService.searchByPage(bookSP, page, pageSize));
     }
