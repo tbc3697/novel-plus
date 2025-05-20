@@ -49,24 +49,30 @@ public class BookController extends BaseController {
      * 查询首页点击榜单数据
      */
     @GetMapping("listClickRank")
-    public RestResult<List<Book>> listClickRank() {
-        return RestResult.ok(bookService.listClickRank());
+    public RestResult<List<Book>> listClickRank(HttpServletRequest request) {
+        // if (nonPrivilegeUser(request)) {
+        //     return RestResult.ok(List.of());
+        // }
+        // return RestResult.ok(bookService.listClickRank());
+        return privilegeRuleRun(request, bookService::listClickRank);
     }
 
     /**
      * 查询首页新书榜单数据
      */
     @GetMapping("listNewRank")
-    public RestResult<List<Book>> listNewRank() {
-        return RestResult.ok(bookService.listNewRank());
+    public RestResult<List<Book>> listNewRank(HttpServletRequest request) {
+        // return RestResult.ok(bookService.listNewRank());
+        return privilegeRuleRun(request, bookService::listNewRank);
     }
 
     /**
      * 查询首页更新榜单数据
      */
     @GetMapping("listUpdateRank")
-    public RestResult<List<BookVO>> listUpdateRank() {
-        return RestResult.ok(bookService.listUpdateRank());
+    public RestResult<List<BookVO>> listUpdateRank(HttpServletRequest request) {
+        // return RestResult.ok(bookService.listUpdateRank());
+        return privilegeRuleRun(request, bookService::listUpdateRank);
     }
 
     /**
@@ -81,8 +87,14 @@ public class BookController extends BaseController {
      * 分页搜索
      */
     @GetMapping("searchByPage")
-    public RestResult<?> searchByPage(BookSpVO bookSP, @RequestParam(value = "curr", defaultValue = "1") int page,
-        @RequestParam(value = "limit", defaultValue = "20") int pageSize) {
+    public RestResult<?> searchByPage(BookSpVO bookSP,
+                                      @RequestParam(value = "curr", defaultValue = "1") int page,
+                                      @RequestParam(value = "limit", defaultValue = "20") int pageSize,
+                                      HttpServletRequest request) {
+        // return RestResult.ok(bookService.searchByPage(bookSP, page, pageSize));
+        if (nonPrivilegeUser(request)) {
+            RestResult.ok(new Object());
+        }
         return RestResult.ok(bookService.searchByPage(bookSP, page, pageSize));
     }
 
@@ -100,7 +112,7 @@ public class BookController extends BaseController {
      */
     @GetMapping("listRank")
     public RestResult<List<Book>> listRank(@RequestParam(value = "type", defaultValue = "0") Byte type,
-        @RequestParam(value = "limit", defaultValue = "30") Integer limit) {
+                                           @RequestParam(value = "limit", defaultValue = "30") Integer limit) {
         return RestResult.ok(bookService.listRank(type, limit));
     }
 
@@ -122,7 +134,7 @@ public class BookController extends BaseController {
         data.put("bookIndexCount", bookService.queryIndexCount(bookId));
         BookIndex bookIndex = bookService.queryBookIndex(lastBookIndexId);
         String lastBookContent = bookContentServiceMap.get(bookIndex.getStorageType())
-            .queryBookContent(bookId, lastBookIndexId).getContent();
+                .queryBookContent(bookId, lastBookIndexId).getContent();
         if (lastBookContent.length() > 42) {
             lastBookContent = lastBookContent.substring(0, 42);
         }
@@ -144,8 +156,8 @@ public class BookController extends BaseController {
      */
     @GetMapping("listCommentByPage")
     public RestResult<PageBean<BookCommentVO>> listCommentByPage(@RequestParam("bookId") Long bookId,
-        @RequestParam(value = "curr", defaultValue = "1") int page,
-        @RequestParam(value = "limit", defaultValue = "5") int pageSize) {
+                                                                 @RequestParam(value = "curr", defaultValue = "1") int page,
+                                                                 @RequestParam(value = "limit", defaultValue = "5") int pageSize) {
         return RestResult.ok(bookService.listCommentByPage(null, bookId, page, pageSize));
     }
 
@@ -175,9 +187,9 @@ public class BookController extends BaseController {
      */
     @GetMapping("/queryIndexList")
     public RestResult<PageBean<BookIndex>> indexList(Long bookId,
-        @RequestParam(value = "curr", defaultValue = "1") int page,
-        @RequestParam(value = "limit", defaultValue = "5") int pageSize,
-        @RequestParam(value = "orderBy", defaultValue = "index_num desc") String orderBy) {
+                                                     @RequestParam(value = "curr", defaultValue = "1") int page,
+                                                     @RequestParam(value = "limit", defaultValue = "5") int pageSize,
+                                                     @RequestParam(value = "orderBy", defaultValue = "index_num desc") String orderBy) {
         return RestResult.ok(PageBuilder.build(bookService.queryIndexList(bookId, orderBy, page, pageSize)));
     }
 

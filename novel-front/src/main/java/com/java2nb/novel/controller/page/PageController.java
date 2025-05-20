@@ -30,7 +30,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 @RequiredArgsConstructor
 @Controller
 public class PageController extends BaseController {
-    private final List<String> PRIVILEGE_USER_LIST = List.of("admin", "root", "15652283697");
 
     private final BookService bookService;
 
@@ -51,13 +50,13 @@ public class PageController extends BaseController {
 
     @RequestMapping("{module}/{url}.html")
     public String module2(@PathVariable("module") String module, @PathVariable("url") String url,
-        HttpServletRequest request) {
+                          HttpServletRequest request) {
 
         if (request.getRequestURI().startsWith("/author")) {
-            //访问作者专区
+            // 访问作者专区
             UserDetails user = getUserDetails(request);
             if (user == null) {
-                //未登录
+                // 未登录
                 return "redirect:/user/login.html?originUrl=" + request.getRequestURI();
             }
 
@@ -72,7 +71,7 @@ public class PageController extends BaseController {
 
     @RequestMapping("{module}/{classify}/{url}.html")
     public String module3(@PathVariable("module") String module, @PathVariable("classify") String classify,
-        @PathVariable("url") String url) {
+                          @PathVariable("url") String url) {
         return module + "/" + classify + "/" + url;
     }
 
@@ -82,12 +81,12 @@ public class PageController extends BaseController {
     @SneakyThrows
     @RequestMapping(path = {"/", "/index", "/index.html"})
     public String index(Model model) {
-        //加载小说首页小说基本信息线程
+        // 加载小说首页小说基本信息线程
         CompletableFuture<Map<Byte, List<BookSettingVO>>> bookCompletableFuture = CompletableFuture.supplyAsync(
-            bookService::listBookSettingVO, threadPoolExecutor);
-        //加载首页新闻线程
+                bookService::listBookSettingVO, threadPoolExecutor);
+        // 加载首页新闻线程
         CompletableFuture<List<News>> newsCompletableFuture = CompletableFuture.supplyAsync(newsService::listIndexNews,
-            threadPoolExecutor);
+                threadPoolExecutor);
         model.addAttribute("bookMap", bookCompletableFuture.get());
         model.addAttribute("newsList", newsCompletableFuture.get());
         return ThreadLocalUtil.getTemplateDir() + "index";
@@ -166,31 +165,31 @@ public class PageController extends BaseController {
     @SneakyThrows
     @RequestMapping("/book/{bookId}.html")
     public String bookDetail(@PathVariable("bookId") Long bookId, Model model) {
-        //加载小说基本信息线程
+        // 加载小说基本信息线程
         CompletableFuture<Book> bookCompletableFuture = CompletableFuture.supplyAsync(() -> {
-            //查询书籍
+            // 查询书籍
             Book book = bookService.queryBookDetail(bookId);
             log.debug("加载小说基本信息线程结束");
             return book;
         }, threadPoolExecutor);
-        //加载小说评论列表线程
+        // 加载小说评论列表线程
         CompletableFuture<PageBean<BookCommentVO>> bookCommentPageBeanCompletableFuture = CompletableFuture.supplyAsync(
-            () -> {
-                PageBean<BookCommentVO> bookCommentVOPageBean = bookService.listCommentByPage(null, bookId, 1, 5);
-                log.debug("加载小说评论列表线程结束");
-                return bookCommentVOPageBean;
-            }, threadPoolExecutor);
-        //加载小说首章信息线程，该线程在加载小说基本信息线程执行完毕后才执行
+                () -> {
+                    PageBean<BookCommentVO> bookCommentVOPageBean = bookService.listCommentByPage(null, bookId, 1, 5);
+                    log.debug("加载小说评论列表线程结束");
+                    return bookCommentVOPageBean;
+                }, threadPoolExecutor);
+        // 加载小说首章信息线程，该线程在加载小说基本信息线程执行完毕后才执行
         CompletableFuture<Long> firstBookIndexIdCompletableFuture = bookCompletableFuture.thenApplyAsync((book) -> {
             if (book.getLastIndexId() != null) {
-                //查询首章目录ID
+                // 查询首章目录ID
                 Long firstBookIndexId = bookService.queryFirstBookIndexId(bookId);
                 log.debug("加载小说基本信息线程结束");
                 return firstBookIndexId;
             }
             return null;
         }, threadPoolExecutor);
-        //加载随机推荐小说线程，该线程在加载小说基本信息线程执行完毕后才执行
+        // 加载随机推荐小说线程，该线程在加载小说基本信息线程执行完毕后才执行
         CompletableFuture<List<Book>> recBookCompletableFuture = bookCompletableFuture.thenApplyAsync((book) -> {
             List<Book> books = bookService.listRecBookByCatId(book.getCatId());
             log.debug("加载随机推荐小说线程结束");
@@ -225,65 +224,65 @@ public class PageController extends BaseController {
     @SneakyThrows
     @RequestMapping("/book/{bookId}/{bookIndexId}.html")
     public String bookContent(@PathVariable("bookId") Long bookId, @PathVariable("bookIndexId") Long bookIndexId,
-        HttpServletRequest request, Model model) {
-        //加载小说基本信息线程
+                              HttpServletRequest request, Model model) {
+        // 加载小说基本信息线程
         CompletableFuture<Book> bookCompletableFuture = CompletableFuture.supplyAsync(() -> {
-            //查询书籍
+            // 查询书籍
             Book book = bookService.queryBookDetail(bookId);
             log.debug("加载小说基本信息线程结束");
             return book;
         }, threadPoolExecutor);
 
-        //加载小说章节信息线程
+        // 加载小说章节信息线程
         CompletableFuture<BookIndex> bookIndexCompletableFuture = CompletableFuture.supplyAsync(() -> {
-            //查询目录
+            // 查询目录
             BookIndex bookIndex = bookService.queryBookIndex(bookIndexId);
             log.debug("加载小说章节信息线程结束");
             return bookIndex;
         }, threadPoolExecutor);
 
-        //加载小说上一章节信息线程，该线程在加载小说章节信息线程执行完毕后才执行
+        // 加载小说上一章节信息线程，该线程在加载小说章节信息线程执行完毕后才执行
         CompletableFuture<Long> preBookIndexIdCompletableFuture = bookIndexCompletableFuture.thenApplyAsync(
-            (bookIndex) -> {
-                //查询上一章节目录ID
-                Long preBookIndexId = bookService.queryPreBookIndexId(bookId, bookIndex.getIndexNum());
-                log.debug("加载小说上一章节信息线程结束");
-                return preBookIndexId;
-            }, threadPoolExecutor);
+                (bookIndex) -> {
+                    // 查询上一章节目录ID
+                    Long preBookIndexId = bookService.queryPreBookIndexId(bookId, bookIndex.getIndexNum());
+                    log.debug("加载小说上一章节信息线程结束");
+                    return preBookIndexId;
+                }, threadPoolExecutor);
 
-        //加载小说下一章节信息线程，该线程在加载小说章节信息线程执行完毕后才执行
+        // 加载小说下一章节信息线程，该线程在加载小说章节信息线程执行完毕后才执行
         CompletableFuture<Long> nextBookIndexIdCompletableFuture = bookIndexCompletableFuture.thenApplyAsync(
-            (bookIndex) -> {
-                //查询下一章目录ID
-                Long nextBookIndexId = bookService.queryNextBookIndexId(bookId, bookIndex.getIndexNum());
-                log.debug("加载小说下一章节信息线程结束");
-                return nextBookIndexId;
-            }, threadPoolExecutor);
+                (bookIndex) -> {
+                    // 查询下一章目录ID
+                    Long nextBookIndexId = bookService.queryNextBookIndexId(bookId, bookIndex.getIndexNum());
+                    log.debug("加载小说下一章节信息线程结束");
+                    return nextBookIndexId;
+                }, threadPoolExecutor);
 
-        //加载小说内容信息线程，该线程在加载小说章节信息线程执行完毕后才执行
+        // 加载小说内容信息线程，该线程在加载小说章节信息线程执行完毕后才执行
         CompletableFuture<BookContent> bookContentCompletableFuture = bookIndexCompletableFuture.thenApplyAsync(
-            (bookIndex) -> {
-                //查询内容
-                BookContent bookContent = bookContentServiceMap.get(bookIndex.getStorageType())
-                    .queryBookContent(bookId, bookIndexId);
-                log.debug("加载小说内容信息线程结束");
-                return bookContent;
-            }, threadPoolExecutor);
+                (bookIndex) -> {
+                    // 查询内容
+                    BookContent bookContent = bookContentServiceMap.get(bookIndex.getStorageType())
+                            .queryBookContent(bookId, bookIndexId);
+                    log.debug("加载小说内容信息线程结束");
+                    return bookContent;
+                }, threadPoolExecutor);
 
-        //判断用户是否需要购买线程，该线程在加载小说章节信息线程执行完毕后才执行
+        // 判断用户是否需要购买线程，该线程在加载小说章节信息线程执行完毕后才执行
         CompletableFuture<Boolean> needBuyCompletableFuture = bookIndexCompletableFuture.thenApplyAsync((bookIndex) -> {
             UserDetails user = getUserDetails(request);
-            //判断该目录是否收费
+            // 判断该目录是否收费
             if (bookIndex.getIsVip() != null && bookIndex.getIsVip() == 1 && nonPrivilegeUser(user)) {
-                //收费
+                // 收费
                 if (user == null) {
-                    //未登录，需要购买
+                    // 未登录，需要购买
                     return true;
                 }
-                //判断用户是否购买过该目录
+                // 判断用户是否购买过该目录
                 boolean isBuy = userService.queryIsBuyBookIndex(user.getId(), bookIndexId);
                 if (!isBuy) {
-                    //没有购买过，需要购买
+                    // 没有购买过，需要购买
                     return true;
                 }
             }
@@ -308,7 +307,7 @@ public class PageController extends BaseController {
      */
     @RequestMapping("/book/comment-{bookId}.html")
     public String commentList(@PathVariable("bookId") Long bookId, Model model) {
-        //查询书籍
+        // 查询书籍
         Book book = bookService.queryBookDetail(bookId);
         model.addAttribute("book", book);
         return "book/book_comment";
@@ -319,7 +318,7 @@ public class PageController extends BaseController {
      */
     @RequestMapping("/about/newsInfo-{newsId}.html")
     public String newsInfo(@PathVariable("newsId") Long newsId, Model model) {
-        //查询新闻
+        // 查询新闻
         News news = newsService.queryNewsInfo(newsId);
         model.addAttribute("news", news);
         return "about/news_info";
@@ -333,15 +332,15 @@ public class PageController extends BaseController {
     public String authorRegister(Author author, HttpServletRequest request, Model model) {
         UserDetails user = getUserDetails(request);
         if (user == null) {
-            //未登录
+            // 未登录
             return "redirect:/user/login.html?originUrl=/author/register.html";
         }
 
         if (StringUtils.isNotBlank(author.getInviteCode())) {
-            //提交作者注册信息
+            // 提交作者注册信息
             String errorInfo = authorService.register(user.getId(), author);
             if (StringUtils.isBlank(errorInfo)) {
-                //注册成功
+                // 注册成功
                 return "redirect:/author/index.html";
             }
             model.addAttribute("LabErr", errorInfo);
@@ -349,14 +348,5 @@ public class PageController extends BaseController {
         }
         return "author/register";
     }
-
-    private boolean privilegeUser(UserDetails user) {
-        return PRIVILEGE_USER_LIST.contains(user.getUsername());
-    }
-
-    private boolean nonPrivilegeUser(UserDetails user) {
-        return !privilegeUser(user);
-    }
-
 
 }
