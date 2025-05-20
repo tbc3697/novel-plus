@@ -114,7 +114,7 @@ public class BookController extends BaseController {
     public RestResult<List<Book>> listRank(@RequestParam(value = "type", defaultValue = "0") Byte type,
                                            @RequestParam(value = "limit", defaultValue = "30") Integer limit,
                                            HttpServletRequest request) {
-        return privilegeRuleRun(request, ()->bookService.listRank(type, limit));
+        return privilegeRuleRun(request, () -> bookService.listRank(type, limit));
     }
 
     /**
@@ -149,7 +149,7 @@ public class BookController extends BaseController {
     @GetMapping("listRecBookByCatId")
     public RestResult<List<Book>> listRecBookByCatId(Integer catId, HttpServletRequest request) {
         // return RestResult.ok(bookService.listRecBookByCatId(catId));
-        return privilegeRuleRun(request, ()->bookService.listRecBookByCatId(catId));
+        return privilegeRuleRun(request, () -> bookService.listRecBookByCatId(catId));
     }
 
 
@@ -182,7 +182,7 @@ public class BookController extends BaseController {
     @GetMapping("queryNewIndexList")
     public RestResult<List<BookIndex>> queryNewIndexList(Long bookId, HttpServletRequest request) {
         // return RestResult.ok(bookService.queryIndexList(bookId, "index_num desc", 1, 10));
-        return privilegeRuleRun(request, ()->bookService.queryIndexList(bookId, "index_num desc", 1, 10));
+        return privilegeRuleRun(request, () -> bookService.queryIndexList(bookId, "index_num desc", 1, 10));
     }
 
     /**
