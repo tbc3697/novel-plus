@@ -91,6 +91,10 @@ public class BookServiceImpl implements BookService {
                 //批量保存目录和内容
                 bookIndexList.forEach(bookIndex -> {
                     bookIndex.setStorageType(storageType);
+                    if (bookIndex.getIsVip() == null) {
+                        bookIndex.setIsVip((byte) 1);
+                        bookIndex.setBookPrice(5);
+                    }
                 });
                 bookIndexMapper.insertMultiple(bookIndexList);
                 bookContentServiceMap.get(storageType).saveBookContent(bookContentList, book.getId());
