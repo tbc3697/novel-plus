@@ -17,7 +17,7 @@ dataSources:
 #    minimumIdle: 5
 #    maximumPoolSize: 10
 #    idleTimeout: 600000
-#    maxLifetime: 3600000
+    maxLifetime: 300000 # 5min
 #    connectionTestQuery: select 1
     keepaliveTime: 300000
   ds_2:
