@@ -20,6 +20,7 @@ dataSources:
     maxLifetime: 300000 # 5min
 #    connectionTestQuery: select 1
     keepaliveTime: 300000
+    test-on-borrow: true
   ds_2:
     dataSourceClassName: com.zaxxer.hikari.HikariDataSource
     driverClassName: com.mysql.cj.jdbc.Driver
