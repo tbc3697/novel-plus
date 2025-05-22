@@ -14,6 +14,7 @@ import java.util.Random;
 @Slf4j
 @Component
 public class CrawlHttpClient {
+    private final CrawSimpleCounter counter = new CrawSimpleCounter();
 
     @Value("${crawl.interval.min}")
     private Integer intervalMin;
@@ -26,6 +27,18 @@ public class CrawlHttpClient {
     private static final ThreadLocal<Integer> RETRY_COUNT = new ThreadLocal<>();
 
     public String get(String url, String charset) {
+        var success = true;
+        try {
+            return doGet(url, charset);
+        } catch (Throwable throwable) {
+            success = false;
+            throw throwable;
+        } finally {
+            counter.add(success);
+        }
+    }
+
+    public String doGet(String url, String charset) {
         if (Objects.nonNull(intervalMin) && Objects.nonNull(intervalMax) && intervalMax > intervalMin) {
             try {
                 Thread.sleep(random.nextInt(intervalMax - intervalMin + 1) + intervalMin);
@@ -37,7 +50,7 @@ public class CrawlHttpClient {
         if (Objects.isNull(body) || body.length() < Constants.INVALID_HTML_LENGTH) {
             return processErrorHttpResult(url, charset);
         }
-        //成功获得html内容
+        // 成功获得html内容
         return body;
     }
 
