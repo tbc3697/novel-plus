@@ -260,6 +260,11 @@ public class CrawlServiceImpl implements CrawlService {
 
         while (page <= totalPage) {
             try {
+                // 1.阻塞过程（使用了 sleep,同步锁的 wait,socket 中的 receiver,accept 等方法时）捕获中断异常InterruptedException来退出线程。
+                // 2.非阻塞过程中通过判断中断标志来退出线程。
+                if (Thread.currentThread().isInterrupted()) {
+                    return;
+                }
                 String catIdRule = ruleBean.getCatIdRule().get("catId" + catId);
                 if (StringUtils.isNotBlank(catIdRule)) {
                     String catBookListUrl = extractBookUrl(ruleBean, catIdRule, page);
