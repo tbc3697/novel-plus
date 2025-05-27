@@ -1,3 +1,14 @@
 spring:
     config:
         import: classpath:application-common-dev.yml
+
+# apollo
+app:
+    id: novel.crawl
+#apollo.meta: 启动脚本提供
+apollo:
+    bootstrap:
+        enabled: true
+        namespaces: application
+        eagerLoad:
+            enabled: true

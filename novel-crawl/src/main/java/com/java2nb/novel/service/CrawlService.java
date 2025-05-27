@@ -117,4 +117,6 @@ public interface CrawlService {
      * @return
      */
     CrawlSource getCrawlSource(Integer id);
+
+    void stopsCrawl();
 }
