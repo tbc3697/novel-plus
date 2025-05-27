@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class Beans {
 
-    @Bean
+    // @Bean
     public XxlJobSpringExecutor xxlJobExecutor(IConfigService configService) {
         var xxlConfig = configService.getXxlConfig();
         final XxlJobSpringExecutor xxlJobSpringExecutor = new XxlJobSpringExecutor(xxlConfig.isEnable());

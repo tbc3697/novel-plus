@@ -41,7 +41,7 @@ public class BookServiceImpl implements BookService {
 
     private final Map<String, BookContentService> bookContentServiceMap;
 
-    @Value("${content.save.storage}")
+    @Value("${content.save.storage:db}")
     private String storageType;
 
 

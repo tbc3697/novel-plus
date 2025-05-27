@@ -14,6 +14,16 @@ admin:
   username: admin
   password: admin
 
+# apollo
+app:
+  id: novel.crawl
+#apollo.meta: 启动脚本提供
+apollo:
+  bootstrap:
+    enabled: true
+    namespaces: application
+    eagerLoad:
+      enabled: true
 
 
 crawl:

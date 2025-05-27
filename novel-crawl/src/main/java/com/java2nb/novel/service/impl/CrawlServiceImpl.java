@@ -49,7 +49,7 @@ import static org.mybatis.dynamic.sql.select.SelectDSL.select;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public abstract class CrawlServiceImpl implements CrawlService {
+public class CrawlServiceImpl implements CrawlService {
 
     private final CrawlParser crawlParser;
 
