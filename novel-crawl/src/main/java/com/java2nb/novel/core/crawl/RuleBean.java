@@ -61,5 +61,8 @@ public class RuleBean {
 
     private String filterContent;
 
+    // add
+    private int indexIdGroup = 1;
+
 
 }

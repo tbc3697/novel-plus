@@ -185,7 +185,7 @@ public class CrawlParser {
                 if (hasIndex == null || !StringUtils.deleteWhitespace(hasIndex.getIndexName())
                     .equals(StringUtils.deleteWhitespace(indexName))) {
                     // TODO 临时适配
-                    String sourceIndexId = indexIdMatch.group(1);
+                    String sourceIndexId = indexIdMatch.group(ruleBean.getIndexIdGroup());
                     String bookContentUrl = ruleBean.getBookContentUrl();
                     int calStart = bookContentUrl.indexOf("{cal_");
                     if (calStart != -1) {
