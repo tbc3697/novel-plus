@@ -54,6 +54,8 @@ public class CrawlParser {
                     String authorName = authorNameMatch.group(1);
                     //设置作者名
                     book.setAuthorName(authorName);
+
+                    // 图片
                     if (StringUtils.isNotBlank(ruleBean.getPicUrlPatten())) {
                         Pattern picUrlPatten = PatternFactory.getPattern(ruleBean.getPicUrlPatten());
                         Matcher picUrlMatch = picUrlPatten.matcher(bookDetailHtml);
@@ -67,6 +69,7 @@ public class CrawlParser {
                             book.setPicUrl(picUrl);
                         }
                     }
+                    // 评分
                     if (StringUtils.isNotBlank(ruleBean.getScorePatten())) {
                         Pattern scorePatten = PatternFactory.getPattern(ruleBean.getScorePatten());
                         Matcher scoreMatch = scorePatten.matcher(bookDetailHtml);
@@ -77,6 +80,7 @@ public class CrawlParser {
                             book.setScore(Float.parseFloat(score));
                         }
                     }
+                    // 访问次数
                     if (StringUtils.isNotBlank(ruleBean.getVisitCountPatten())) {
                         Pattern visitCountPatten = PatternFactory.getPattern(ruleBean.getVisitCountPatten());
                         Matcher visitCountMatch = visitCountPatten.matcher(bookDetailHtml);
@@ -181,7 +185,7 @@ public class CrawlParser {
                 if (hasIndex == null || !StringUtils.deleteWhitespace(hasIndex.getIndexName())
                     .equals(StringUtils.deleteWhitespace(indexName))) {
                     // TODO 临时适配
-                    String sourceIndexId = indexIdMatch.group(2);
+                    String sourceIndexId = indexIdMatch.group(1);
                     String bookContentUrl = ruleBean.getBookContentUrl();
                     int calStart = bookContentUrl.indexOf("{cal_");
                     if (calStart != -1) {
