@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class BookListItem {
     // 使用abstract遇到了关键字，所以加了Text以规避
-    private String abstractText;
+    // private String abstractText;
     private String author;
     private String bookId;
     private String bookName;
@@ -17,8 +17,8 @@ public class BookListItem {
     private String thumbUrl;
     private String wordCount;
 
-    public String getAbstract() {
-        return abstractText;
-    }
+    // public String getAbstract() {
+    //     return abstractText;
+    // }
 
 }
