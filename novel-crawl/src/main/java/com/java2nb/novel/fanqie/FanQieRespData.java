@@ -9,8 +9,8 @@ import java.util.List;
 @Getter
 @ToString
 @RequiredArgsConstructor
-public class FanQieRespData<T> {
-    private final List<T> bookList;
-    private final String hasMore;
-    private final String totalCount;
+public class FanQieRespData {
+    private final List<BookListItem> book_list;
+    private final boolean has_more;
+    private final int total_count;
 }

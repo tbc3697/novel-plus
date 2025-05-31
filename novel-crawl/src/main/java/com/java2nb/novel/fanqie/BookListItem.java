@@ -7,7 +7,7 @@ public class BookListItem {
     // 使用abstract遇到了关键字，所以加了Text以规避
     // private String abstractText;
     private String author;
-    private String bookId;
+    private String book_id;
     private String bookName;
     private int creationStatus;
     private String lastChapterTime;
