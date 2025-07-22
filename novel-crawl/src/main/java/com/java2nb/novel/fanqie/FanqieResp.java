@@ -8,9 +8,9 @@ import lombok.ToString;
 @RequiredArgsConstructor
 @Getter
 @ToString
-public class FanqieResp<T> {
+public class FanqieResp {
     private final int code;
-    private final T data;
+    private final FanQieRespData data;
     private final String message;
     private final String log_id;
 }
