@@ -2,6 +2,9 @@ package com.java2nb.novel.fanqie;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.java2nb.novel.core.crawl.RuleBean;
+import com.java2nb.novel.entity.CrawlSource;
 import com.java2nb.novel.service.CrawlService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -18,11 +21,16 @@ public class CrawlFanQieImpl {
     private final CrawlService crawlService;
 
     public static void main(String[] args) {
-        new CrawlFanQieImpl(null).crawl();
+        var t = new Thread(() -> {
+            new CrawlFanQieImpl(null).crawl(99);
+        }, "");
+        t.start();
     }
 
     @SneakyThrows
-    public void crawl() {
+    public void crawl(Integer sourceId) {
+        CrawlSource source = crawlService.queryCrawlSource(sourceId);
+        RuleBean ruleBean = new ObjectMapper().readValue(source.getCrawlRule(), RuleBean.class);
         // 列表页
         // 书页
         // index
@@ -30,12 +38,13 @@ public class CrawlFanQieImpl {
         var request = HttpRequest.newBuilder().GET().uri(new URI(baseUrl)).build();
         var r = client.send(request, HttpResponse.BodyHandlers.ofString());
         var body = r.body();
-        FanqieResp<FanQieRespData<BookListItem>> bodyObj = JSON.parseObject(body, new TypeReference<FanqieResp<FanQieRespData<BookListItem>>>() {});
+        FanqieResp<FanQieRespData<BookListItem>> bodyObj = JSON.parseObject(body, new TypeReference<FanqieResp<FanQieRespData<BookListItem>>>() {
+        });
 
         var decodedBody = FontUtil.decode(JSON.toJSONString(bodyObj.getData().getBookList().get(0)));
 
         System.out.println(decodedBody);
         //
-//        crawlService.parseBookAndSave(1, null, 99, null);
+        crawlService.parseBookAndSave(1, ruleBean, sourceId, null);
     }
 }
