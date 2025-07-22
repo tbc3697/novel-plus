@@ -29,7 +29,7 @@ import static org.mybatis.dynamic.sql.SqlBuilder.isEqualTo;
 @Mapper
 public interface BookCommentMapper {
     @Generated("org.mybatis.generator.api.MyBatisGenerator")
-    BasicColumn[] selectList = BasicColumn.columnList(id, bookId, commentContent, replyCount, auditStatus, createTime, createUserId);
+    BasicColumn[] selectList = BasicColumn.columnList(id, bookId, commentContent, location, replyCount, auditStatus, createTime, createUserId);
 
     @Generated("org.mybatis.generator.api.MyBatisGenerator")
     @SelectProvider(type=SqlProviderAdapter.class, method="select")
