@@ -2,7 +2,6 @@ package com.java2nb.novel.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
-import com.java2nb.novel.core.cache.CacheKey;
 import com.java2nb.novel.core.cache.CacheService;
 import com.java2nb.novel.core.crawl.CrawlParser;
 import com.java2nb.novel.core.crawl.RuleBean;
@@ -58,8 +57,6 @@ public class CrawlServiceImpl implements CrawlService {
     private final CrawlSingleTaskMapper crawlSingleTaskMapper;
 
     private final BookService bookService;
-
-    private final CacheService cacheService;
 
     private final IdWorker idWorker = IdWorker.INSTANCE;
 
@@ -262,7 +259,7 @@ public class CrawlServiceImpl implements CrawlService {
             return;
         }
 
-        //当前页码1
+        // 当前页码1
         int page = 1;
         int totalPage = page;
 
@@ -294,9 +291,9 @@ public class CrawlServiceImpl implements CrawlService {
                             parseBookAndSave(catId, ruleBean, sourceId, bookId, null);
                         } catch (InterruptedException e) {
                             log.error(e.getMessage(), e);
-                            //1.阻塞过程（使用了 sleep,同步锁的 wait,socket 中的 receiver,accept 等方法时）
-                            //捕获中断异常InterruptedException来退出线程。
-                            //2.非阻塞过程中通过判断中断标志来退出线程。
+                            // 1.阻塞过程（使用了 sleep,同步锁的 wait,socket 中的 receiver,accept 等方法时）
+                            // 捕获中断异常InterruptedException来退出线程。
+                            // 2.非阻塞过程中通过判断中断标志来退出线程。
                             return;
                         } catch (Exception e) {
                             log.error(e.getMessage(), e);
@@ -329,7 +326,7 @@ public class CrawlServiceImpl implements CrawlService {
     }
 
     @Override
-    public boolean parseBookAndSave(int catId, RuleBean ruleBean, Integer sourceId, String bookId, CrawlSingleTask task) throws InterruptedException{
+    public boolean parseBookAndSave(int catId, RuleBean ruleBean, Integer sourceId, String bookId, CrawlSingleTask task) throws InterruptedException {
 
         final AtomicBoolean parseResult = new AtomicBoolean(false);
 
