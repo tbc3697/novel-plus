@@ -37,7 +37,7 @@ public class CrawlFanQieImpl {
         if (list != null && !list.isEmpty()) {
             for (BookListItem item : list) {
                 var bookId = item.getBook_id();
-                crawlService.parseBookAndSave(1, null, sourceId, bookId, null);
+                // crawlService.parseBookAndSave(1, null, sourceId, bookId, null);
             }
         }
 

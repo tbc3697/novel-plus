@@ -2,7 +2,6 @@ package com.java2nb.novel.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.pagehelper.PageHelper;
-import com.java2nb.novel.core.cache.CacheService;
 import com.java2nb.novel.core.crawl.CrawlParser;
 import com.java2nb.novel.core.crawl.RuleBean;
 import com.java2nb.novel.core.enums.ResponseStatus;
@@ -22,7 +21,6 @@ import com.java2nb.novel.vo.CrawlSourceVO;
 import io.github.xxyopen.model.page.PageBean;
 import io.github.xxyopen.model.page.builder.pagehelper.PageBuilder;
 import io.github.xxyopen.util.IdWorker;
-import io.github.xxyopen.util.ThreadUtil;
 import io.github.xxyopen.web.exception.BusinessException;
 import io.github.xxyopen.web.util.BeanUtil;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +32,7 @@ import org.mybatis.dynamic.sql.select.render.SelectStatementProvider;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -62,8 +61,8 @@ public class CrawlServiceImpl implements CrawlService {
 
     private final CrawlHttpClient crawlHttpClient;
 
-    private final Map<Integer, Set<Long>> runningCrawlThread = new HashMap<>();
-
+    private final Map<Integer, Boolean> sourceStatusCache = new ConcurrentHashMap<>();
+    private final Map<Integer, Integer> sourceOffsetCache = new ConcurrentHashMap<>();
 
     @Override
     public void addCrawlSource(CrawlSource source) {
@@ -117,15 +116,8 @@ public class CrawlServiceImpl implements CrawlService {
         if (sourceStatus == (byte) 0) {
             // 关闭,直接修改数据库状态，并直接修改数据库状态后获取该爬虫正在运行的线程集合全部停止
             SpringUtil.getBean(CrawlService.class).updateCrawlSourceStatus(sourceId, sourceStatus);
-            Set<Long> runningCrawlThreadId = runningCrawlThread.get(sourceId);
-            if (runningCrawlThreadId != null) {
-                for (Long ThreadId : runningCrawlThreadId) {
-                    Thread thread = ThreadUtil.findThread(ThreadId);
-                    if (thread != null && thread.isAlive()) {
-                        thread.interrupt();
-                    }
-                }
-            }
+            sourceStatusCache.remove(sourceId);
+            sourceOffsetCache.remove(sourceId);
         } else {
             // 开启
             // 查询爬虫源状态和规则
@@ -146,13 +138,13 @@ public class CrawlServiceImpl implements CrawlService {
                 // 按分类开始爬虫解析任务
                 catIdRule.forEach((catIdStr, catIdRuleValue) -> {
                     final int catId = parseCatId(catIdStr);
+                    sourceStatusCache.put(sourceId, true);
+                    sourceOffsetCache.put(sourceId, 1);
                     Thread thread = new Thread(() -> CrawlServiceImpl.this.parseBookList(catId, ruleBean, sourceId), "craw_" + sourceId + "_" + catId);
                     thread.start();
                     // thread加入到监控缓存中
                     threadIds.add(thread.getId());
                 });
-                // cacheService.setObject(CacheKey.RUNNING_CRAWL_THREAD_KEY_PREFIX + sourceId, threadIds);
-                runningCrawlThread.put(sourceId, threadIds);
             }
         }
 
@@ -260,17 +252,14 @@ public class CrawlServiceImpl implements CrawlService {
         }
 
         // 当前页码1
-        int page = 1;
+        int page = sourceOffsetCache.getOrDefault(sourceId, 1);
         int totalPage = page;
 
         while (page <= totalPage) {
-
+            if (sourceStatusCache.get(sourceId) != null && !sourceStatusCache.get(sourceId)) {
+                return;
+            }
             try {
-                // 1.阻塞过程（使用了 sleep,同步锁的 wait,socket 中的 receiver,accept 等方法时）捕获中断异常InterruptedException来退出线程。
-                // 2.非阻塞过程中通过判断中断标志来退出线程。
-                if (Thread.currentThread().isInterrupted()) {
-                    return;
-                }
                 String catBookListUrl = extractBookUrl(ruleBean, catIdRule, page);
                 log.info("catBookListUrl：{}", catBookListUrl);
 
@@ -320,9 +309,8 @@ public class CrawlServiceImpl implements CrawlService {
             }
 
             page += 1;
+            sourceOffsetCache.put(sourceId, page);
         }
-
-
     }
 
     @Override
@@ -404,4 +392,5 @@ public class CrawlServiceImpl implements CrawlService {
             return catIdRule.replace("{page}", page + "");
         }
     }
+
 }
