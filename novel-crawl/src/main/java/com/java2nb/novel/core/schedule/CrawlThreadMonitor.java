@@ -19,7 +19,7 @@ import java.util.Set;
  *
  * @author Administrator
  */
-@Service
+// @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CrawlThreadMonitor {
@@ -28,36 +28,36 @@ public class CrawlThreadMonitor {
 
     private final CrawlService crawlService;
 
-    @Scheduled(fixedRate = 1000 * 60 * 5)
-    public void monitor() {
-
-        //查询需要监控的正在运行的爬虫源
-        List<CrawlSource> sources = crawlService.queryCrawlSourceByStatus((byte) 1);
-
-        for (CrawlSource source : sources) {
-            Set<Long> runningCrawlThreadIds = (Set<Long>) cacheService.getObject(CacheKey.RUNNING_CRAWL_THREAD_KEY_PREFIX + source.getId());
-            boolean sourceStop = true;
-            if (runningCrawlThreadIds != null) {
-                for (Long threadId : runningCrawlThreadIds) {
-                    Thread thread = ThreadUtil.findThread(threadId);
-
-                    if (thread != null && thread.isAlive()) {
-                        //有活跃线程，说明该爬虫源正在运行，数据库中状态正确，不需要修改
-                        sourceStop = false;
-
-                    }
-
-                }
-            }
-
-            if (sourceStop) {
-                crawlService.updateCrawlSourceStatus(source.getId(), (byte) 0);
-            }
-
-
-        }
-
-    }
+    // @Scheduled(fixedRate = 1000 * 60 * 5)
+    // public void monitor() {
+    //
+    //     //查询需要监控的正在运行的爬虫源
+    //     List<CrawlSource> sources = crawlService.queryCrawlSourceByStatus((byte) 1);
+    //
+    //     for (CrawlSource source : sources) {
+    //         Set<Long> runningCrawlThreadIds = (Set<Long>) cacheService.getObject(CacheKey.RUNNING_CRAWL_THREAD_KEY_PREFIX + source.getId());
+    //         boolean sourceStop = true;
+    //         if (runningCrawlThreadIds != null) {
+    //             for (Long threadId : runningCrawlThreadIds) {
+    //                 Thread thread = ThreadUtil.findThread(threadId);
+    //
+    //                 if (thread != null && thread.isAlive()) {
+    //                     //有活跃线程，说明该爬虫源正在运行，数据库中状态正确，不需要修改
+    //                     sourceStop = false;
+    //
+    //                 }
+    //
+    //             }
+    //         }
+    //
+    //         if (sourceStop) {
+    //             crawlService.updateCrawlSourceStatus(source.getId(), (byte) 0);
+    //         }
+    //
+    //
+    //     }
+    //
+    // }
 
 
 }
