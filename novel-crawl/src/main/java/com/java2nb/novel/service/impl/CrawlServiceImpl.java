@@ -65,6 +65,8 @@ public class CrawlServiceImpl implements CrawlService {
 
     private final CrawlHttpClient crawlHttpClient;
 
+    private final Map<Integer, Set<Long>> runningCrawlThread = new HashMap<>();
+
 
     @Override
     public void addCrawlSource(CrawlSource source) {
@@ -118,7 +120,7 @@ public class CrawlServiceImpl implements CrawlService {
         if (sourceStatus == (byte) 0) {
             // 关闭,直接修改数据库状态，并直接修改数据库状态后获取该爬虫正在运行的线程集合全部停止
             SpringUtil.getBean(CrawlService.class).updateCrawlSourceStatus(sourceId, sourceStatus);
-            Set<Long> runningCrawlThreadId = (Set<Long>) cacheService.getObject(CacheKey.RUNNING_CRAWL_THREAD_KEY_PREFIX + sourceId);
+            Set<Long> runningCrawlThreadId = runningCrawlThread.get(sourceId);
             if (runningCrawlThreadId != null) {
                 for (Long ThreadId : runningCrawlThreadId) {
                     Thread thread = ThreadUtil.findThread(ThreadId);
@@ -152,7 +154,8 @@ public class CrawlServiceImpl implements CrawlService {
                     // thread加入到监控缓存中
                     threadIds.add(thread.getId());
                 });
-                cacheService.setObject(CacheKey.RUNNING_CRAWL_THREAD_KEY_PREFIX + sourceId, threadIds);
+                // cacheService.setObject(CacheKey.RUNNING_CRAWL_THREAD_KEY_PREFIX + sourceId, threadIds);
+                runningCrawlThread.put(sourceId, threadIds);
             }
         }
 
@@ -240,12 +243,12 @@ public class CrawlServiceImpl implements CrawlService {
 
     @Override
     public CrawlSource getCrawlSource(Integer id) {
-        Optional<CrawlSource> opt = crawlSourceMapper.selectByPrimaryKey(id);
-        if (opt.isPresent()) {
-            CrawlSource crawlSource = opt.get();
-            return crawlSource;
-        }
-        return null;
+        return crawlSourceMapper.selectByPrimaryKey(id).orElse(null);
+    }
+
+    @Override
+    public Integer getTaskProgress(Long taskId) {
+        return Optional.ofNullable(crawlParser.getCrawlTaskProgress(taskId)).orElse(0);
     }
 
     /**
@@ -254,53 +257,62 @@ public class CrawlServiceImpl implements CrawlService {
     @Override
     public void parseBookList(int catId, RuleBean ruleBean, Integer sourceId) {
 
-        // 当前页码1
+        String catIdRule = ruleBean.getCatIdRule().get("catId" + catId);
+        if (StringUtils.isBlank(catIdRule)) {
+            return;
+        }
+
+        //当前页码1
         int page = 1;
         int totalPage = page;
 
         while (page <= totalPage) {
+
             try {
                 // 1.阻塞过程（使用了 sleep,同步锁的 wait,socket 中的 receiver,accept 等方法时）捕获中断异常InterruptedException来退出线程。
                 // 2.非阻塞过程中通过判断中断标志来退出线程。
                 if (Thread.currentThread().isInterrupted()) {
                     return;
                 }
-                String catIdRule = ruleBean.getCatIdRule().get("catId" + catId);
-                if (StringUtils.isNotBlank(catIdRule)) {
-                    String catBookListUrl = extractBookUrl(ruleBean, catIdRule, page);
-                    log.info("catBookListUrl：{}", catBookListUrl);
+                String catBookListUrl = extractBookUrl(ruleBean, catIdRule, page);
+                log.info("catBookListUrl：{}", catBookListUrl);
 
-                    String bookListHtml = crawlHttpClient.get(catBookListUrl, ruleBean.getCharset());
-                    if (bookListHtml != null) {
-                        Pattern bookIdPatten = Pattern.compile(ruleBean.getBookIdPatten());
-                        Matcher bookIdMatcher = bookIdPatten.matcher(bookListHtml);
-                        boolean isFindBookId = bookIdMatcher.find();
-                        while (isFindBookId) {
-                            try {
-                                // 1.阻塞过程（使用了 sleep,同步锁的 wait,socket 中的 receiver,accept 等方法时）捕获中断异常InterruptedException来退出线程。
-                                // 2.非阻塞过程中通过判断中断标志来退出线程。
-                                if (Thread.currentThread().isInterrupted()) {
-                                    return;
-                                }
-
-                                String bookId = bookIdMatcher.group(1);
-                                parseBookAndSave(catId, ruleBean, sourceId, bookId);
-                            } catch (Exception e) {
-                                log.error(e.getMessage(), e);
+                String bookListHtml = crawlHttpClient.get(catBookListUrl, ruleBean.getCharset());
+                if (bookListHtml != null) {
+                    Pattern bookIdPatten = Pattern.compile(ruleBean.getBookIdPatten());
+                    Matcher bookIdMatcher = bookIdPatten.matcher(bookListHtml);
+                    boolean isFindBookId = bookIdMatcher.find();
+                    while (isFindBookId) {
+                        try {
+                            // 1.阻塞过程（使用了 sleep,同步锁的 wait,socket 中的 receiver,accept 等方法时）捕获中断异常InterruptedException来退出线程。
+                            // 2.非阻塞过程中通过判断中断标志来退出线程。
+                            if (Thread.currentThread().isInterrupted()) {
+                                return;
                             }
 
-                            isFindBookId = bookIdMatcher.find();
+                            String bookId = bookIdMatcher.group(1);
+                            parseBookAndSave(catId, ruleBean, sourceId, bookId, null);
+                        } catch (InterruptedException e) {
+                            log.error(e.getMessage(), e);
+                            //1.阻塞过程（使用了 sleep,同步锁的 wait,socket 中的 receiver,accept 等方法时）
+                            //捕获中断异常InterruptedException来退出线程。
+                            //2.非阻塞过程中通过判断中断标志来退出线程。
+                            return;
+                        } catch (Exception e) {
+                            log.error(e.getMessage(), e);
                         }
 
-                        Pattern totalPagePatten = Pattern.compile(ruleBean.getTotalPagePatten());
-                        Matcher totalPageMatcher = totalPagePatten.matcher(bookListHtml);
-                        boolean isFindTotalPage = totalPageMatcher.find();
-                        if (isFindTotalPage) {
-                            // todo
-                            totalPage = Integer.parseInt(totalPageMatcher.group(2));
-                        }
-
+                        isFindBookId = bookIdMatcher.find();
                     }
+
+                    Pattern totalPagePatten = Pattern.compile(ruleBean.getTotalPagePatten());
+                    Matcher totalPageMatcher = totalPagePatten.matcher(bookListHtml);
+                    boolean isFindTotalPage = totalPageMatcher.find();
+                    if (isFindTotalPage) {
+                        // todo
+                        totalPage = Integer.parseInt(totalPageMatcher.group(2));
+                    }
+
                 }
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
@@ -317,7 +329,7 @@ public class CrawlServiceImpl implements CrawlService {
     }
 
     @Override
-    public boolean parseBookAndSave(int catId, RuleBean ruleBean, Integer sourceId, String bookId) {
+    public boolean parseBookAndSave(int catId, RuleBean ruleBean, Integer sourceId, String bookId, CrawlSingleTask task) throws InterruptedException{
 
         final AtomicBoolean parseResult = new AtomicBoolean(false);
 
@@ -345,10 +357,10 @@ public class CrawlServiceImpl implements CrawlService {
                 book.setCrawlLastTime(new Date());
                 book.setId(idWorker.nextId());
                 // 解析章节目录
-                boolean parseIndexContentResult = crawlParser.parseBookIndexAndContent(bookId, book, ruleBean,
+                boolean parseIndexContentResult = crawlParser.parseBookIndexAndContent(bookId, book, ruleBean, sourceId,
                         new HashMap<>(0), chapter -> {
                             bookService.saveBookAndIndexAndContent(book, chapter.getBookIndexList(), chapter.getBookContentList());
-                        });
+                        }, task);
                 parseResult.set(parseIndexContentResult);
 
             } else {

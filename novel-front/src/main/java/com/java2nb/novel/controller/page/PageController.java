@@ -80,7 +80,7 @@ public class PageController extends BaseController {
      */
     @SneakyThrows
     @RequestMapping(path = {"/", "/index", "/index.html"})
-    public String index(Model model) {
+    public String index(Model model, HttpServletRequest request) {
         //加载小说首页小说基本信息线程
         CompletableFuture<Map<String, List<BookSettingVO>>> bookCompletableFuture = CompletableFuture.supplyAsync(
                 () -> nonPrivilegeUser(request) ? Map.of() : bookService.listBookSettingVO(), threadPoolExecutor);

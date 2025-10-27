@@ -16,13 +16,16 @@ import java.util.function.Supplier;
  * @author 11797
  */
 public class BaseController {
-    private final List<String> PRIVILEGE_USER_LIST = List.of("admin", "root", "15652283697");
+    private final List<String> PRIVILEGE_USER_LIST = List.of("admin", "root");
 
     protected JwtTokenUtil jwtTokenUtil;
 
 
     protected boolean privilegeUser(UserDetails user) {
-        return user != null && PRIVILEGE_USER_LIST.contains(user.getUsername());
+        if (user == null) {
+            return false;
+        }
+        return user.getNickName().endsWith(".privilege.true") || PRIVILEGE_USER_LIST.contains(user.getNickName());
     }
 
     protected boolean nonPrivilegeUser(UserDetails user) {
