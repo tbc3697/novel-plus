@@ -1,0 +1,35 @@
+{
+  "bookListUrl": "https://www.bie5.cc/{catId}/{page}.html",
+  "catIdRule": {
+    "catId1": "xuanhuan",
+    "catId2": "wuxia",
+    "catId3": "dushi",
+    "catId4": "lishi",
+    "catId5": "kehuan",
+    "catId6": "wangyou",
+    "catId7": "finish"
+  },
+  "bookIdPatten": "href=\"/html/(\\d+)/\"",
+  "pagePatten": "<b>(\\d+)</b>",
+  "totalPagePatten": "href=\"/[^/]+/\\d+.html\">(\\d+)</a><a href=\"/[^/]+/\\d+.html\">&gt;</a></div>",
+  "bookDetailUrl": "https://www.bie5.cc/html/{bookId}/",
+  "bookNamePatten": "<span class=\"title\">([^/]+)</span>",
+  "authorNamePatten": "<span>作者：([^/]+)</span>",
+  "picUrlPatten": "<img src=\"([^>]+)\"\\s+alt=",
+  "statusPatten": "<span>状态：([^/]+)</span>",
+  "bookStatusRule": {
+    "连载": 0,
+    "已经完本": 1
+  },
+  "descStart": "<dl><dt>内容简介：</dt><dd>",
+  "descEnd": "</dd></dl>",
+  "upadateTimePatten": "<span class=\"last\">更新：(\\d+-\\d+-\\d+\\s\\d+:\\d+:\\d+)</span>",
+  "upadateTimeFormatPatten": "yyyy-MM-dd HH:mm:ss",
+  "bookIndexUrl": "https://www.bie5.cc/html/{bookId}/",
+  "indexIdPatten": "<dd><a\\s+href =\"/html/\\d+/(\\d+).html\">[^/]+</a></dd>",
+  "indexNamePatten": "<dd><a\\s+href =\"/html/\\d+/\\d+.html\">([^/]+)</a></dd>",
+  "bookContentUrl": "https://www.bie5.cc/html/{bookId}/{indexId}.html",
+  "contentStart": "<div id=\"chaptercontent\" class=\"Readarea ReadAjax_content\">",
+  "contentEnd": "请收藏本站：",
+  "filterContent": ""
+}

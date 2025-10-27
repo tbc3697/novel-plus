@@ -95,6 +95,8 @@ public class CrawlParser {
                     String authorName = authorNameMatch.group(1);
                     //设置作者名
                     book.setAuthorName(authorName);
+
+                    // 图片
                     if (StringUtils.isNotBlank(ruleBean.getPicUrlPatten())) {
                         Pattern picUrlPatten = PatternFactory.getPattern(ruleBean.getPicUrlPatten());
                         Matcher picUrlMatch = picUrlPatten.matcher(bookDetailHtml);
@@ -108,6 +110,7 @@ public class CrawlParser {
                             book.setPicUrl(picUrl);
                         }
                     }
+                    // 评分
                     if (StringUtils.isNotBlank(ruleBean.getScorePatten())) {
                         Pattern scorePatten = PatternFactory.getPattern(ruleBean.getScorePatten());
                         Matcher scoreMatch = scorePatten.matcher(bookDetailHtml);
@@ -118,6 +121,7 @@ public class CrawlParser {
                             book.setScore(Float.parseFloat(score));
                         }
                     }
+                    // 访问次数
                     if (StringUtils.isNotBlank(ruleBean.getVisitCountPatten())) {
                         Pattern visitCountPatten = PatternFactory.getPattern(ruleBean.getVisitCountPatten());
                         Matcher visitCountMatch = visitCountPatten.matcher(bookDetailHtml);
@@ -247,14 +251,13 @@ public class CrawlParser {
 
                 if (hasIndex == null || !StringUtils.deleteWhitespace(hasIndex.getIndexName())
                     .equals(StringUtils.deleteWhitespace(indexName))) {
-
-                    String sourceIndexId = indexIdMatch.group(1);
+                    // TODO 临时适配
+                    String sourceIndexId = indexIdMatch.group(ruleBean.getIndexIdGroup());
                     String bookContentUrl = ruleBean.getBookContentUrl();
                     int calStart = bookContentUrl.indexOf("{cal_");
                     if (calStart != -1) {
                         //内容页URL需要进行计算才能得到
-                        String calStr = bookContentUrl.substring(calStart,
-                            calStart + bookContentUrl.substring(calStart).indexOf("}"));
+                        String calStr = bookContentUrl.substring(calStart, calStart + bookContentUrl.substring(calStart).indexOf("}"));
                         String[] calArr = calStr.split("_");
                         int calType = Integer.parseInt(calArr[1]);
                         if (calType == 1) {
@@ -279,14 +282,14 @@ public class CrawlParser {
 
                     }
 
-                    String contentUrl = bookContentUrl.replace("{bookId}", sourceBookId)
-                        .replace("{indexId}", sourceIndexId);
+                    String contentUrl = bookContentUrl
+                            .replace("{bookId}", sourceBookId)
+                            .replace("{indexId}", sourceIndexId);
 
                     //查询章节内容
                     String contentHtml = crawlHttpClient.get(contentUrl, ruleBean.getCharset());
                     if (contentHtml != null && !contentHtml.contains("正在手打中")) {
-                        String content = contentHtml.substring(
-                            contentHtml.indexOf(ruleBean.getContentStart()) + ruleBean.getContentStart().length());
+                        String content = contentHtml.substring(contentHtml.indexOf(ruleBean.getContentStart()) + ruleBean.getContentStart().length());
                         content = content.substring(0, content.indexOf(ruleBean.getContentEnd()));
                         // 小说内容过滤
                         String filterContent = ruleBean.getFilterContent();

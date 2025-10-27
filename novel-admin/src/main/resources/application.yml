@@ -1,17 +1,18 @@
 server:
-  session-timeout: 18000
+  # def : 18000(5h) / 86400(24h)
+  session-timeout: 86400
   #    tomcat:
   #        max-threads: 1000
   #        min-spare-threads: 30
-  port: 80
+  port: 9080
 #    uri-encoding: utf-8
 #security:
 #  basic:
 #    enabled: false
 spring:
-  datasource:
-    driverClassName: org.apache.shardingsphere.driver.ShardingSphereDriver
-    url: jdbc:shardingsphere:absolutepath:${user.dir}/config/shardingsphere-jdbc.yml
+#  datasource:
+#    driverClassName: org.apache.shardingsphere.driver.ShardingSphereDriver
+#    url: jdbc:shardingsphere:absolutepath:${user.dir}/config/shardingsphere-jdbc.yml
   thymeleaf:
     mode: LEGACYHTML5
     cache: false
@@ -19,7 +20,7 @@ spring:
     time-zone: GMT+8
     date-format: yyyy-MM-dd HH:mm:ss
   profiles:
-    active: dev
+    active: prod
   
   #上传文件的最大值（100M）
   servlet:

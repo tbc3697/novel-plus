@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:shardingsphere:absolutepath:${user.dir}/config/shardingsphere-jdbc.yml
+#    url: jdbc:shardingsphere:absolutepath:${user.dir}/config/shardingsphere-jdbc.yml
     driver-class-name: org.apache.shardingsphere.driver.ShardingSphereDriver
   thymeleaf:
     mode: LEGACYHTML5 #去除thymeleaf的html严格校验thymeleaf.mode=LEGACYHTML5

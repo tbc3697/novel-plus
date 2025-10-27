@@ -44,6 +44,10 @@
         <commons-fileupload.version>1.5</commons-fileupload.version>
         <alipay-sdk-java.version>4.35.139.ALL</alipay-sdk-java.version>
         <xxyopen.version>1.0.0</xxyopen.version>
+
+        <xxl.version>2.4.2-SNAPSHOT</xxl.version>
+        <apollo.version>2.3.0-SNAPSHOT</apollo.version>
+        <fast_json.version>2.0.12</fast_json.version>
     </properties>
 
     <dependencyManagement>
@@ -65,8 +69,27 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.alibaba.fastjson2</groupId>
+            <artifactId>fastjson2</artifactId>
+            <version>${fast_json.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.ctrip.framework.apollo</groupId>
+            <artifactId>apollo-client</artifactId>
+            <version>${apollo.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!-- Add Lombok annotation processor -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>annotationProcessor</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -80,6 +103,24 @@
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <!-- 如果maven无法解析io.github.xxyopen的依赖，需要检查镜像mirror的配置 -->
     <!-- mirror可以拦截对远程仓库的请求 , 改变对目标仓库的下载地址-->
     <!-- 如果maven setting.xml中配置了镜像 , 而且镜像配置的规则中匹配到目标仓库时,
@@ -90,28 +131,28 @@
     <!-- 另外需要注意的是，由于镜像仓库完全屏蔽了被镜像仓库，当镜像仓库不稳定或者停止服务的时候，
     Maven仍将无法访问被镜像仓库，因而将无法下载依赖。-->
     <repositories>
-        <repository>
-            <id>ali</id>
-            <url>https://maven.aliyun.com/repository/public</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
+<!--        <repository>-->
+<!--            <id>ali</id>-->
+<!--            <url>https://maven.aliyun.com/repository/public</url>-->
+<!--            <releases>-->
+<!--                <enabled>true</enabled>-->
+<!--            </releases>-->
+<!--            <snapshots>-->
+<!--                <enabled>false</enabled>-->
+<!--            </snapshots>-->
+<!--        </repository>-->
     </repositories>
     <pluginRepositories>
-        <pluginRepository>
-            <id>ali-plugin</id>
-            <url>https://maven.aliyun.com/repository/public</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
+<!--        <pluginRepository>-->
+<!--            <id>ali-plugin</id>-->
+<!--            <url>https://maven.aliyun.com/repository/public</url>-->
+<!--            <releases>-->
+<!--                <enabled>true</enabled>-->
+<!--            </releases>-->
+<!--            <snapshots>-->
+<!--                <enabled>false</enabled>-->
+<!--            </snapshots>-->
+<!--        </pluginRepository>-->
     </pluginRepositories>
 
     <profiles>

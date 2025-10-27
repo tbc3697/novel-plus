@@ -14,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FileBookContentServiceImpl implements BookContentService {
 
-    @Value("${content.save.path}")
+    @Value("${content.save.path:/}")
     private String fileSavePath;
 
     @Override

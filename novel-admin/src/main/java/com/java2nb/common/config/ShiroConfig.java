@@ -161,7 +161,7 @@ public class ShiroConfig {
     @Bean
     public DefaultWebSessionManager sessionManager() {
         DefaultWebSessionManager sessionManager = new DefaultWebSessionManager();
-        sessionManager.setGlobalSessionTimeout(tomcatTimeout * 1000);
+        sessionManager.setGlobalSessionTimeout(tomcatTimeout * 1000L);
         sessionManager.setSessionDAO(sessionDAO());
         Collection<SessionListener> listeners = new ArrayList<SessionListener>();
         listeners.add(new BDSessionListener());

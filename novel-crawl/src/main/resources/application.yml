@@ -1,19 +1,29 @@
 #端口号
 server:
-  port: 8081
+  port: 9081
   servlet:
     session:
       timeout: 1D
 
 spring:
   profiles:
-    active: dev
+    active: prod
 
 #登录用户名密码
 admin:
   username: admin
   password: admin
 
+# apollo
+app:
+  id: novel.crawl
+#apollo.meta: 启动脚本提供
+apollo:
+  bootstrap:
+    enabled: true
+    namespaces: application
+    eagerLoad:
+      enabled: true
 
 
 crawl:

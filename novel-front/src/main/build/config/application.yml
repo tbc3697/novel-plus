@@ -1,16 +1,16 @@
 #端口号
 server:
-  port: 8085
+  port: 9085
 
 spring:
   data:
     redis:
       #Redis服务器IP
-      host: 127.0.0.1
+      host: 192.168.31.2
       #Redis服务器连接端口
       port: 6379
       #Redis服务器连接密码
-      password: test123456
+      password: 1234
       #连接超时时间（毫秒）
       timeout: 10000
 

@@ -3,16 +3,20 @@ spring:
     import: classpath:application-common.yml
   main:
     allow-bean-definition-overriding: true
+  #Redis服务器IP
   data:
     redis:
       #Redis服务器IP
-      host: 127.0.0.1
+      host: 192.168.31.2
       #Redis服务器连接端口
       port: 6379
       #Redis服务器连接密码
-      password: test123456
+      password: 1234
       #连接超时时间（毫秒）
       timeout: 10000
+      database: 2
+  datasource:
+    url: jdbc:shardingsphere:absolutepath:${user.dir}/config/shardingsphere-jdbc.yml
 
 logging:
   level:
@@ -24,17 +28,29 @@ logging:
 content:
   save:
     storage: db #存储介质，db：数据库，file：txt文本
-    path: /Users/xiongxiaoyang/books  #txt小说文本保存路径
+    path: /Users/tbc/books  #txt小说文本保存路径
 
+# HTTP 代理配置
+#http:
+#  proxy:
+#    # 是否开启 HTTP 代理，true-开启，false-不开启
+#    enabled: false
+#    # 代理 IP
+#    ip: 40.83.102.86
+#    # 代理端口号
+#    port: 80
 # HTTP 代理配置
 http:
   proxy:
     # 是否开启 HTTP 代理，true-开启，false-不开启
-    enabled: false
+    enabled: true
     # 代理 IP
-    ip: 40.83.102.86
+    ip: s382.kdlfps.com
     # 代理端口号
-    port: 80
-
+    port: 18866
+    # 代理用户名
+    username: f2586745967
+    # 代理密码
+    password: qbgnk0vi
 
 

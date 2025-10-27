@@ -1,9 +1,9 @@
 server:
-  port: 8083
+  port: 9083
 
 spring:
   profiles:
-    active: dev
+    active: prod
     include: website,alipay,oss
 
 jwt:
