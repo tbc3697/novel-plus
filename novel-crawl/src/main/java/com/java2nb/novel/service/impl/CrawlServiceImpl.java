@@ -23,6 +23,7 @@ import io.github.xxyopen.model.page.builder.pagehelper.PageBuilder;
 import io.github.xxyopen.util.IdWorker;
 import io.github.xxyopen.web.exception.BusinessException;
 import io.github.xxyopen.web.util.BeanUtil;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -129,8 +130,6 @@ public class CrawlServiceImpl implements CrawlService {
                 SpringUtil.getBean(CrawlService.class).updateCrawlSourceStatus(sourceId, sourceStatus);
                 RuleBean ruleBean = new ObjectMapper().readValue(source.getCrawlRule(), RuleBean.class);
 
-                Set<Long> threadIds = new HashSet<>();
-
                 var catIdRule = ruleBean.getCatIdRule();
                 if (catIdRule == null || catIdRule.isEmpty()) {
                     return;
@@ -140,10 +139,8 @@ public class CrawlServiceImpl implements CrawlService {
                     final int catId = parseCatId(catIdStr);
                     sourceStatusCache.put(sourceId, true);
                     sourceOffsetCache.put(sourceId, 1);
-                    Thread thread = new Thread(() -> CrawlServiceImpl.this.parseBookList(catId, ruleBean, sourceId), "craw_" + sourceId + "_" + catId);
+                    Thread thread = new Thread(() -> parseBookList(catId, ruleBean, sourceId), "craw_" + sourceId + "_" + catId);
                     thread.start();
-                    // thread加入到监控缓存中
-                    threadIds.add(thread.getId());
                 });
             }
         }
