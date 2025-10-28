@@ -278,12 +278,12 @@ public class CrawlServiceImpl implements CrawlService {
 
                             String bookId = bookIdMatcher.group(1);
                             if (bookIdSet.contains(bookId)) {
-                                continue;
-                            } else {
                                 log.info("重复采集，bookId：{}", bookId);
+                            } else {
                                 bookIdSet.add(bookId);
+                                parseBookAndSave(catId, ruleBean, sourceId, bookId, null);
                             }
-                            parseBookAndSave(catId, ruleBean, sourceId, bookId, null);
+
                         } catch (InterruptedException e) {
                             log.error(e.getMessage(), e);
                             // 1.阻塞过程（使用了 sleep,同步锁的 wait,socket 中的 receiver,accept 等方法时）

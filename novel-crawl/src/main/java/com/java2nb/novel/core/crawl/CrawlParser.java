@@ -91,8 +91,11 @@ public class CrawlParser {
                 Pattern authorNamePatten = PatternFactory.getPattern(ruleBean.getAuthorNamePatten());
                 Matcher authorNameMatch = authorNamePatten.matcher(bookDetailHtml);
                 boolean isFindAuthorName = authorNameMatch.find();
-                if (isFindAuthorName) {
-                    String authorName = authorNameMatch.group(1);
+                if (isFindAuthorName || true) {
+                    String authorName = "ss";
+                    if (isFindAuthorName) {
+                        authorName = authorNameMatch.group(1);
+                    }
                     //设置作者名
                     book.setAuthorName(authorName);
 
