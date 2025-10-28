@@ -63,6 +63,7 @@ public class CrawlServiceImpl implements CrawlService {
     private final CrawlHttpClient crawlHttpClient;
 
     private final Map<Integer, Boolean> sourceStatusCache = new ConcurrentHashMap<>();
+    @Getter
     private final Map<Integer, Integer> sourceOffsetCache = new ConcurrentHashMap<>();
 
     @Override
@@ -252,7 +253,9 @@ public class CrawlServiceImpl implements CrawlService {
         int page = sourceOffsetCache.getOrDefault(sourceId, 1);
         int totalPage = page;
 
+        Set<String> bookIdSet = new HashSet<>();
         while (page <= totalPage) {
+            bookIdSet.clear();
             if (sourceStatusCache.get(sourceId) != null && !sourceStatusCache.get(sourceId)) {
                 return;
             }
@@ -274,6 +277,12 @@ public class CrawlServiceImpl implements CrawlService {
                             }
 
                             String bookId = bookIdMatcher.group(1);
+                            if (bookIdSet.contains(bookId)) {
+                                continue;
+                            } else {
+                                log.info("重复采集，bookId：{}", bookId);
+                                bookIdSet.add(bookId);
+                            }
                             parseBookAndSave(catId, ruleBean, sourceId, bookId, null);
                         } catch (InterruptedException e) {
                             log.error(e.getMessage(), e);
@@ -346,6 +355,7 @@ public class CrawlServiceImpl implements CrawlService {
                 parseResult.set(parseIndexContentResult);
 
             } else {
+                log.info("该小说已存在：{} - {}", bookId, book.getBookName());
                 // 只更新书籍的爬虫相关字段
                 bookService.updateCrawlProperties(existBook.getId(), sourceId, bookId);
                 parseResult.set(true);

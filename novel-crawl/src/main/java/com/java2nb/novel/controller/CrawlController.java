@@ -3,6 +3,7 @@ package com.java2nb.novel.controller;
 import com.java2nb.novel.core.cache.CacheKey;
 import com.java2nb.novel.core.cache.CacheService;
 import com.java2nb.novel.core.utils.HttpUtil;
+import com.java2nb.novel.service.impl.CrawlServiceImpl;
 import io.github.xxyopen.model.page.PageBean;
 
 import com.java2nb.novel.entity.CrawlSingleTask;
@@ -159,7 +160,11 @@ public class CrawlController {
         return RestResult.ok(crawlService.getTaskProgress(id));
     }
 
-
+    @PostMapping("updatePage")
+    public RestResult<String> updatePage(@RequestParam("sourceId") Integer sourceId, @RequestParam("page") int page) {
+        ((CrawlServiceImpl)crawlService).getSourceOffsetCache().put(sourceId, page);
+        return RestResult.ok("ok");
+    }
 
 
 }
