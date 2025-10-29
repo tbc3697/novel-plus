@@ -259,6 +259,7 @@ public class CrawlServiceImpl implements CrawlService {
         // 当前页码1
         sourceMap.putIfAbsent(catId, 1);
         int totalPage = sourceMap.get(catId);
+        int firstTotal = 0;
 
         Set<String> bookIdSet = new HashSet<>();
         while (sourceMap.get(catId) <= totalPage) {
@@ -302,11 +303,14 @@ public class CrawlServiceImpl implements CrawlService {
                             // 2.非阻塞过程中通过判断中断标志来退出线程。
                             log.info("任务已终止，cache Interrupted, sourceId={}", sourceId);
                             return;
-                        } catch (Exception e) {
-                            log.error(e.getMessage(), e);
+                        } catch (Throwable throwable) {
+                            log.error("error，msg={}", throwable.getMessage(), throwable);
                         }
 
                         isFindBookId = bookIdMatcher.find();
+                        if (!isFindBookId) {
+                            log.info("任务已终止，已采集完所有页，catId={}, page={}", catId, page);
+                        }
                     }
 
                     Pattern totalPagePatten = Pattern.compile(ruleBean.getTotalPagePatten());
@@ -315,6 +319,13 @@ public class CrawlServiceImpl implements CrawlService {
                     if (isFindTotalPage) {
                         // todo
                         totalPage = Integer.parseInt(totalPageMatcher.group(2));
+                    }
+                    // todo 临时修正到了第5页totalPage因重复无法识别的问题
+                    if (firstTotal == 0) {
+                        firstTotal = totalPage;
+                    }
+                    if (totalPage < firstTotal) {
+                        totalPage = firstTotal;
                     }
 
                 }
