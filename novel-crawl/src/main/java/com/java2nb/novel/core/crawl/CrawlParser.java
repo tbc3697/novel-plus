@@ -235,10 +235,10 @@ public class CrawlParser {
             }
 
             Pattern indexIdPatten = PatternFactory.getPattern(ruleBean.getIndexIdPatten());
-            Matcher indexIdMatch = indexIdPatten.matcher(indexListHtml);
+            Matcher indexIdMatch = indexIdPatten.matcher(new String(indexListHtml.getBytes()));
 
             Pattern indexNamePatten = PatternFactory.getPattern(ruleBean.getIndexNamePatten());
-            Matcher indexNameMatch = indexNamePatten.matcher(indexListHtml);
+            Matcher indexNameMatch = indexNamePatten.matcher(new String(indexListHtml.getBytes()));
 
             boolean isFindIndex = indexIdMatch.find() & indexNameMatch.find();
 
