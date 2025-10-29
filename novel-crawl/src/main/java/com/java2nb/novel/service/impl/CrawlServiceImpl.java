@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.render.RenderingStrategies;
 import org.mybatis.dynamic.sql.select.render.SelectStatementProvider;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -65,6 +66,10 @@ public class CrawlServiceImpl implements CrawlService {
     private final Map<Integer, Boolean> sourceStatusCache = new ConcurrentHashMap<>();
     @Getter
     private final Map<Integer, Integer> sourceOffsetCache = new ConcurrentHashMap<>();
+
+    @Getter
+    private final Map<Integer, Map<Integer, Integer>> runningTaskCache = new ConcurrentHashMap<>();
+
 
     @Override
     public void addCrawlSource(CrawlSource source) {
@@ -118,8 +123,7 @@ public class CrawlServiceImpl implements CrawlService {
         if (sourceStatus == (byte) 0) {
             // 关闭,直接修改数据库状态，并直接修改数据库状态后获取该爬虫正在运行的线程集合全部停止
             SpringUtil.getBean(CrawlService.class).updateCrawlSourceStatus(sourceId, sourceStatus);
-            sourceStatusCache.remove(sourceId);
-            sourceOffsetCache.remove(sourceId);
+            runningTaskCache.remove(sourceId);
         } else {
             // 开启
             // 查询爬虫源状态和规则
@@ -135,11 +139,10 @@ public class CrawlServiceImpl implements CrawlService {
                 if (catIdRule == null || catIdRule.isEmpty()) {
                     return;
                 }
+                runningTaskCache.put(sourceId, new HashMap<>());
                 // 按分类开始爬虫解析任务
                 catIdRule.forEach((catIdStr, catIdRuleValue) -> {
                     final int catId = parseCatId(catIdStr);
-                    sourceStatusCache.put(sourceId, true);
-                    sourceOffsetCache.put(sourceId, 1);
                     Thread thread = new Thread(() -> parseBookList(catId, ruleBean, sourceId), "craw_" + sourceId + "_" + catId);
                     thread.start();
                 });
@@ -249,16 +252,23 @@ public class CrawlServiceImpl implements CrawlService {
             return;
         }
 
+        var sourceMap = runningTaskCache.get(sourceId);
+        if (sourceMap == null) {
+            return;
+        }
         // 当前页码1
-        int page = sourceOffsetCache.getOrDefault(sourceId, 1);
-        int totalPage = page;
+        sourceMap.putIfAbsent(catId, 1);
+        int totalPage = sourceMap.get(catId);
 
         Set<String> bookIdSet = new HashSet<>();
-        while (page <= totalPage) {
-            bookIdSet.clear();
-            if (sourceStatusCache.get(sourceId) != null && !sourceStatusCache.get(sourceId)) {
+        while (sourceMap.get(catId) <= totalPage) {
+            sourceMap = runningTaskCache.get(sourceId);
+            if (sourceMap == null) {
+                log.info("任务已终止，sourceId={}", sourceId);
                 return;
             }
+            var page = sourceMap.get(catId);
+            bookIdSet.clear();
             try {
                 String catBookListUrl = extractBookUrl(ruleBean, catIdRule, page);
                 log.info("catBookListUrl：{}", catBookListUrl);
@@ -273,6 +283,7 @@ public class CrawlServiceImpl implements CrawlService {
                             // 1.阻塞过程（使用了 sleep,同步锁的 wait,socket 中的 receiver,accept 等方法时）捕获中断异常InterruptedException来退出线程。
                             // 2.非阻塞过程中通过判断中断标志来退出线程。
                             if (Thread.currentThread().isInterrupted()) {
+                                log.info("任务已终止，isInterrupted, sourceId={}", sourceId);
                                 return;
                             }
 
@@ -289,6 +300,7 @@ public class CrawlServiceImpl implements CrawlService {
                             // 1.阻塞过程（使用了 sleep,同步锁的 wait,socket 中的 receiver,accept 等方法时）
                             // 捕获中断异常InterruptedException来退出线程。
                             // 2.非阻塞过程中通过判断中断标志来退出线程。
+                            log.info("任务已终止，cache Interrupted, sourceId={}", sourceId);
                             return;
                         } catch (Exception e) {
                             log.error(e.getMessage(), e);
@@ -311,11 +323,9 @@ public class CrawlServiceImpl implements CrawlService {
             }
             if (page == totalPage) {
                 // 第一遍采集完成，翻到第一页，继续第二次采集，适用于分页数比较少的最近更新列表
-                page = 0;
+                sourceMap.put(catId, 1);
             }
-
-            page += 1;
-            sourceOffsetCache.put(sourceId, page);
+            sourceMap.put(catId, page+1);
         }
     }
 
