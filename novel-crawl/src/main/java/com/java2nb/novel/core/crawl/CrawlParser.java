@@ -240,7 +240,16 @@ public class CrawlParser {
             Pattern indexNamePatten = PatternFactory.getPattern(ruleBean.getIndexNamePatten());
             Matcher indexNameMatch = indexNamePatten.matcher(new String(indexListHtml.getBytes()));
 
-            boolean isFindIndex = indexIdMatch.find() & indexNameMatch.find();
+            var findIndexId = indexIdMatch.find();
+            var findIndexName = indexNameMatch.find();
+            if (findIndexId ^ findIndexName) {
+                log.error("目录ID和目录名称匹配失败, bookId={}, bookName={}, findIndexId={}, findIndexName={}",
+                        book.getId(), book.getBookName(), findIndexId, findIndexName
+                );
+                return false;
+            }
+            var isFindIndex = findIndexId & findIndexName;
+            // boolean isFindIndex = indexIdMatch.find() & indexNameMatch.find();
 
             int indexNum = 0;
 
