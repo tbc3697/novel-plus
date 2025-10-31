@@ -45,10 +45,35 @@
         </encoder>
     </appender>
 
+    <appender name="ERROR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- 设置日志文件路径 -->
+        <file>logs/novel-crawl-error.log</file>
+        <!-- rollingPolicy:当发生滚动时，决定 RollingFileAppender 的行为，涉及文件移动和重命名。 -->
+        <!-- SizeAndTimeBasedRollingPolicy：基于时间和文件大小的滚动策略 -->
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!-- 活动文件的名字会根据fileNamePattern的值，每隔一段时间改变一次 -->
+            <!-- 文件名：logs/debug.2023-10-01.0.log -->
+            <fileNamePattern>logs/error.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <!-- 每产生一个日志文件，该日志文件的保存期限为30天 -->
+            <maxHistory>30</maxHistory>
+            <!-- 单个日志文件的最大大小 -->
+            <maxFileSize>10MB</maxFileSize>
+            <!-- 所有日志文件的总大小限制 -->
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <!-- pattern节点，用来设置日志的输入格式 -->
+            <pattern>%d %p (%file:%line\)- %m%n</pattern>
+            <!-- 记录日志的编码:此处设置字符集 - -->
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
     <!-- 控制台输出日志级别 -->
     <root level="INFO">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
+        <appender-ref ref="ERROR" />
     </root>
 
     <!-- 指定项目中某个包，当有日志操作行为时的日志记录级别 -->
@@ -57,5 +82,6 @@
     <logger name="com.java2nb" level="DEBUG" additivity="false">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
+        <appender-ref ref="ERROR" />
     </logger>
 </configuration>
