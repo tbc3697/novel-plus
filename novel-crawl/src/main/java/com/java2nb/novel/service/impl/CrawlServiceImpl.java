@@ -309,7 +309,7 @@ public class CrawlServiceImpl implements CrawlService {
 
                         isFindBookId = bookIdMatcher.find();
                         if (!isFindBookId) {
-                            log.info("任务已终止，已采集完所有页，catId={}, page={}", catId, page);
+                            log.info("当前页已采集完，catId={}, page={}", catId, page);
                         }
                     }
 
@@ -334,7 +334,8 @@ public class CrawlServiceImpl implements CrawlService {
             }
             if (page == totalPage) {
                 // 第一遍采集完成，翻到第一页，继续第二次采集，适用于分页数比较少的最近更新列表
-                sourceMap.put(catId, 1);
+//                sourceMap.put(catId, 1);
+                log.info("当前cat已采集完所有页，catId={}, page={}", catId, page);
             }
             sourceMap.put(catId, page+1);
         }
