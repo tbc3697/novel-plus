@@ -85,7 +85,7 @@ public class StarterListener implements ServletContextInitializer {
 
                         }
                         //  休眠10分钟
-                        TimeUnit.MINUTES.sleep(10);
+                        TimeUnit.MINUTES.sleep(2);
                     } catch (Exception e) {
                         log.error(e.getMessage(), e);
                     }
