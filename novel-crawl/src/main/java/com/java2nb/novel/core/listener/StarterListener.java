@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author Administrator
  */
-// @Component
+@Component
 @Slf4j
 @RequiredArgsConstructor
 public class StarterListener implements ServletContextInitializer {
