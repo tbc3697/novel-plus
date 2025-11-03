@@ -1,5 +1,6 @@
 package com.java2nb.novel.core.config;
 
+import com.java2nb.novel.core.filter.LoggingFilter;
 import com.java2nb.novel.core.filter.NovelFilter;
 import com.java2nb.novel.core.filter.XssFilter;
 import jakarta.servlet.DispatcherType;
@@ -30,6 +31,15 @@ public class FilterConfig{
 
     @Value("${xss.urlPatterns}")
     private String urlPatterns;
+
+    @Bean
+    public FilterRegistrationBean<LoggingFilter> logFilterRegister() {
+        FilterRegistrationBean<LoggingFilter> frBean = new FilterRegistrationBean<>();
+        frBean.setFilter(new LoggingFilter());
+        frBean.addUrlPatterns("/*");
+        // frBean.addInitParameter("picSavePath",picSavePath);
+        return frBean;
+    }
 
     @Bean
     public FilterRegistrationBean<NovelFilter> filterRegister() {
