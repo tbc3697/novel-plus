@@ -1,8 +1,11 @@
 package com.java2nb.novel.utils;
 
 import com.java2nb.novel.core.utils.HttpUtil;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
@@ -21,6 +24,9 @@ public class CrawlHttpClient {
 
     @Value("${crawl.interval.max}")
     private Integer intervalMax;
+
+    @Resource
+    private RedisTemplate<String, String> redisTemplate;
 
     private final Random random = new Random();
 
@@ -46,12 +52,20 @@ public class CrawlHttpClient {
                 log.error(e.getMessage(), e);
             }
         }
-        String body = HttpUtil.getByHttpClientWithChrome(url, charset);
+        String body = HttpUtil.getByHttpClientWithChrome(url, charset, getCookie());
         if (Objects.isNull(body) || body.length() < Constants.INVALID_HTML_LENGTH) {
             return processErrorHttpResult(url, charset);
         }
         // 成功获得html内容
         return body;
+    }
+
+    private String getCookie() {
+        try {
+            return redisTemplate.opsForValue().get("cookie");
+        } catch (Throwable throwable) {
+            return null;
+        }
     }
 
     private String processErrorHttpResult(String url, String charset) {

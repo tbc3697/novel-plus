@@ -19,6 +19,9 @@ public class HttpUtil {
     private static final Map<String, RestTemplate> REST_TEMPLATE_MAP = new ConcurrentHashMap<>();
 
     public static String getByHttpClientWithChrome(String url, String charset) {
+        return getByHttpClientWithChrome(url, charset, null);
+    }
+    public static String getByHttpClientWithChrome(String url, String charset, String cookie) {
         log.debug("Get url：{}", url);
         if (!Charset.isSupported(charset)) {
             log.error("字符编码{}无效！", charset);
@@ -28,6 +31,9 @@ public class HttpUtil {
             k -> RestTemplates.newInstance(charset));
         try {
             HttpHeaders headers = new HttpHeaders();
+            if (cookie != null && !cookie.isEmpty()) {
+                headers.add("cookie", cookie);
+            }
             headers.add("user-agent",
                 "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36");
             HttpEntity<String> requestEntity = new HttpEntity<>(null, headers);
