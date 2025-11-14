@@ -35,7 +35,7 @@ public class HttpUtil {
                 headers.add("cookie", cookie);
             }
             headers.add("user-agent",
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.67 Safari/537.36");
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36");
             HttpEntity<String> requestEntity = new HttpEntity<>(null, headers);
             ResponseEntity<String> forEntity = restTemplate.exchange(url, HttpMethod.GET, requestEntity,
                 String.class);
