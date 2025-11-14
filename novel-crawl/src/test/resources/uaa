@@ -1,0 +1,30 @@
+{
+    "bookListUrl": "https://www.uaa.com/novel/list?category={catId}sort=2&page={page}",
+    "catIdRule": {
+        "catId1": "都市"
+    },
+    "bookIdPatten": "<a href=\"/novel/intro?id=([^/]+)\" title=\"([^/]+)\">([^/]+)</a>",
+    "bookDetailUrl": "https://www.uaa.com/novel/intro?id={bookId}",
+    "pagePatten": "class=\"active\">(\\d+)</a>,
+    "totalPagePatten": "...</span><a href=\"/fictions/tag-(\\d+)/(\\d+).html\" class=\"pager-num\">",
+    "bookNamePatten": "<a class="current" href="#">([^/]+)</a>",
+    "authorNamePatten": "<a href="/novel/list?author=([^/]+)">([^/]+)</a>",
+    "picUrlPatten": "",
+    "statusPatten": "<span>状态：([^/]+)</span>",
+    "bookStatusRule": {
+        "连载": 0,
+        "已经完本": 1
+    },
+    "descStart": "<meta name=\"description\" content=\"",
+    "descEnd": "\" />",
+    "upadateTimePatten": "",
+    "upadateTimeFormatPatten": "",
+    "bookIndexUrl": "https://crxs.me/fiction/id-{bookId}.html",
+    "indexIdPatten": "<a href=\"/fiction/id-([^/]+).html\">([^/]+)<div class=\"chapter-item\">",
+    "indexIdGroup": 1,
+    "indexNamePatten": "<div class=\"chapter-item\">([^/]+)</div>",
+    "bookContentUrl": "https://crxs.me/fiction/id-{indexId}.html",
+    "contentStart": "<div class=\"fiction-body\">",
+    "contentEnd": "<div class=\"fiction-chapter-navigator\">",
+    "filterContent": ""
+}
