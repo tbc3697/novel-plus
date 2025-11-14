@@ -64,6 +64,7 @@ public class RuleBean {
 
     // add
     private int indexIdGroup = 1;
+    private int indexNameGroup = 1;
     private String cookie;
 
 

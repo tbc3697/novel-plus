@@ -87,7 +87,7 @@ public class CrawlParser {
             if (isFindBookName) {
                 String bookName = bookNameMatch.group(1);
                 //设置小说名
-                book.setBookName(bookName);
+                // book.setBookName(bookName);
                 Pattern authorNamePatten = PatternFactory.getPattern(ruleBean.getAuthorNamePatten());
                 Matcher authorNameMatch = authorNamePatten.matcher(bookDetailHtml);
                 boolean isFindAuthorName = authorNameMatch.find();
@@ -95,6 +95,8 @@ public class CrawlParser {
                     String authorName = "ss";
                     if (isFindAuthorName) {
                         authorName = authorNameMatch.group(1);
+                    } else {
+                        log.info("custom 作者名未找到，使用默认作者名");
                     }
                     //设置作者名
                     book.setAuthorName(authorName);
@@ -259,7 +261,7 @@ public class CrawlParser {
             while (isFindIndex) {
 
                 BookIndex hasIndex = existBookIndexMap.get(indexNum);
-                String indexName = indexNameMatch.group(1);
+                String indexName = indexNameMatch.group(ruleBean.getIndexNameGroup());
 
                 if (hasIndex == null || !StringUtils.deleteWhitespace(hasIndex.getIndexName())
                     .equals(StringUtils.deleteWhitespace(indexName))) {
