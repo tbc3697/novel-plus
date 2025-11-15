@@ -28,7 +28,7 @@ public class HttpUtil {
             return null;
         }
         RestTemplate restTemplate = REST_TEMPLATE_MAP.computeIfAbsent(charset,
-            k -> RestTemplates.newInstance(charset));
+            k -> RestTemplates.newInstance2(charset));
         try {
             HttpHeaders headers = new HttpHeaders();
             if (cookie != null && !cookie.isEmpty()) {
@@ -53,6 +53,12 @@ public class HttpUtil {
 
     public static String getByHttpClientWithChrome(String url) {
         return getByHttpClientWithChrome(url, DEFAULT_CHARSET);
+    }
+
+    public static void main(String[] args) {
+        new RestTemplates(null);
+        String s = getByHttpClientWithChrome("https://www.uaa.com/novel/list", "utf-8", null);
+        System.out.println(s);
     }
 
 }

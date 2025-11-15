@@ -19,14 +19,17 @@ import org.apache.hc.core5.http.config.RegistryBuilder;
 import org.apache.hc.core5.ssl.SSLContexts;
 import org.apache.hc.core5.ssl.TrustStrategy;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import javax.net.ssl.SSLContext;
+import java.net.http.HttpClient;
 import java.nio.charset.Charset;
 import java.security.cert.X509Certificate;
+import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 
@@ -90,6 +93,33 @@ public class RestTemplates {
         requestFactory.setReadTimeout(30000);
 
         RestTemplate restTemplate = new RestTemplate(requestFactory);
+        List<HttpMessageConverter<?>> list = restTemplate.getMessageConverters();
+        for (HttpMessageConverter<?> httpMessageConverter : list) {
+            if (httpMessageConverter instanceof StringHttpMessageConverter) {
+                ((StringHttpMessageConverter) httpMessageConverter).setDefaultCharset(Charset.forName(charset));
+                break;
+            }
+        }
+        return restTemplate;
+    }
+
+
+    @SneakyThrows
+    public static RestTemplate newInstance2(String charset) {
+        // 1. 配置 JDK 11+ 自带的 HttpClient（可自定义超时、Cookie 管理等）
+        HttpClient jdkHttpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(10)) // 连接超时
+//                .timeout(Duration.ofSeconds(10)) // 响应超时
+                .followRedirects(HttpClient.Redirect.NORMAL) // 跟随重定向（和之前适配逻辑一致）
+                // 若需 Cookie 管理，添加 CookieHandler（和 JDK HttpClient 配置一致）
+                // .cookieHandler(new CookieManager(null, CookiePolicy.ACCEPT_ALL))
+                .build();
+
+        // 2. 创建 JDK HttpClient 适配工厂（Spring 5.3+ 提供）
+        JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(jdkHttpClient);
+
+        // 3. 构建 RestTemplate，绑定适配工厂
+        var restTemplate = new RestTemplate(requestFactory);
         List<HttpMessageConverter<?>> list = restTemplate.getMessageConverters();
         for (HttpMessageConverter<?> httpMessageConverter : list) {
             if (httpMessageConverter instanceof StringHttpMessageConverter) {
