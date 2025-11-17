@@ -312,13 +312,19 @@ public class CrawlServiceImpl implements CrawlService {
                         }
                     }
 
-                    Pattern totalPagePatten = Pattern.compile(ruleBean.getTotalPagePatten());
-                    Matcher totalPageMatcher = totalPagePatten.matcher(bookListHtml);
-                    boolean isFindTotalPage = totalPageMatcher.find();
-                    if (isFindTotalPage) {
-                        // todo
-                        totalPage = Integer.parseInt(totalPageMatcher.group(2));
+                    var totalPageValue = ruleBean.catIdTotalPage(catId);
+                    if (totalPageValue == null) {
+                        Pattern totalPagePatten = Pattern.compile(ruleBean.getTotalPagePatten());
+                        Matcher totalPageMatcher = totalPagePatten.matcher(bookListHtml);
+                        boolean isFindTotalPage = totalPageMatcher.find();
+                        if (isFindTotalPage) {
+                            // todo
+                            totalPage = Integer.parseInt(totalPageMatcher.group(2));
+                        }
+                    } else {
+                        totalPage = totalPageValue;
                     }
+
                     // todo 临时修正到了第5页totalPage因重复无法识别的问题
                     if (firstTotal == 0) {
                         firstTotal = totalPage;
@@ -420,5 +426,50 @@ public class CrawlServiceImpl implements CrawlService {
             return catIdRule.replace("{page}", page + "");
         }
     }
+
+    public static void main(String[] args) {
+        var str = """
+                <!-- 推荐标签结束 -->
+                <div class="pagination_box">
+                    <div class="content_box">
+                        <div class="arrow_box">
+                            <a href="/novel/list?keyword=&searchType=1&author=&category=明星&finished=&space=&source=&tag=&sort=2&page=1"
+                               title="上一页">
+                                <img src="/image/pre_page_icon.svg" alt="上一页"/>
+                            </a>
+                        </div>
+                
+                                <div><a href="/novel/list?keyword=&searchType=1&author=&category=明星&finished=&space=&source=&tag=&sort=2&page=1"
+                                        class="active">1</a></div>
+                                <div><a href="/novel/list?keyword=&searchType=1&author=&category=明星&finished=&space=&source=&tag=&sort=2&page=2"
+                                        class="item">2</a></div>
+                                <div><a href="/novel/list?keyword=&searchType=1&author=&category=明星&finished=&space=&source=&tag=&sort=2&page=3"
+                                        class="item">3</a></div>
+                                <div><a href="/novel/list?keyword=&searchType=1&author=&category=明星&finished=&space=&source=&tag=&sort=2&page=4"
+                                        class="item">4</a></div>
+                
+                
+                        <div class="arrow_box">
+                            <a href="/novel/list?keyword=&searchType=1&author=&category=明星&finished=&space=&source=&tag=&sort=2&page=2"
+                               title="下一页">
+                                <img src="/image/nxt_page_icon.svg" alt="下一页"/>
+                            </a>
+                        </div>
+                    </div>
+            """;
+
+        // 修改后的正则表达式，用于匹配最后一个页码链接并捕获页码数字
+        var matcher = Pattern.compile("<div><a[^>]*page=(\\d+)\"[^>]*class=\"item\">\\d+</a></div>\\s*$").matcher(str);
+        if (matcher.find()) {
+            System.out.println("总页数1: " + matcher.group(1)); // 输出 "213"
+        }
+
+        // 或者使用另一种方式，匹配包含最大页码的链接
+        var matcher2 = Pattern.compile("page=(\\d+)\"[^>]*class=\"item\">(\\d+)</a></div>\\s*<div class=\"arrow_box\">").matcher(str);
+        if (matcher2.find()) {
+            System.out.println("总页数2: " + matcher2.group(1)); // 输出 "213"
+        }
+    }
+
 
 }

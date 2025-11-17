@@ -66,6 +66,14 @@ public class RuleBean {
     private int indexIdGroup = 1;
     private int indexNameGroup = 1;
     private String cookie;
+    private Map<Integer, Integer> catIdTotalPage;
+
+    public Integer catIdTotalPage(Integer catId) {
+        if (catIdTotalPage == null) {
+            return null;
+        }
+        return catIdTotalPage.get(catId);
+    }
 
 
 }
