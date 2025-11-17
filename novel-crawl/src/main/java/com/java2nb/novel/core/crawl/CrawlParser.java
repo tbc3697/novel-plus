@@ -87,7 +87,7 @@ public class CrawlParser {
             if (isFindBookName) {
                 String bookName = bookNameMatch.group(1);
                 //设置小说名
-                // book.setBookName(bookName);
+                book.setBookName(bookName);
                 Pattern authorNamePatten = PatternFactory.getPattern(ruleBean.getAuthorNamePatten());
                 Matcher authorNameMatch = authorNamePatten.matcher(bookDetailHtml);
                 boolean isFindAuthorName = authorNameMatch.find();

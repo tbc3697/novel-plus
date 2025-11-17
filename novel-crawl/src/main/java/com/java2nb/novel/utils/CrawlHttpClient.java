@@ -6,10 +6,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Administrator
@@ -19,14 +23,18 @@ import java.util.Random;
 public class CrawlHttpClient {
     private final CrawSimpleCounter counter = new CrawSimpleCounter();
 
-    @Value("${crawl.interval.min}")
-    private Integer intervalMin;
+    private final String DEF_LIMIT = "1000";
 
-    @Value("${crawl.interval.max}")
-    private Integer intervalMax;
+    // @Value("${crawl.interval.min}")
+    // private Integer intervalMin;
 
-    @Resource
-    private RedisTemplate<String, String> redisTemplate;
+    // @Value("${crawl.interval.max}")
+    // private Integer intervalMax;
+
+    @Autowired
+    private StringRedisTemplate redisTemplate;
+
+    private static final Map<String, LocalDateTime> reqTimeMap = new ConcurrentHashMap<>();
 
     private final Random random = new Random();
 
@@ -45,13 +53,7 @@ public class CrawlHttpClient {
     }
 
     public String doGet(String url, String charset) {
-        if (Objects.nonNull(intervalMin) && Objects.nonNull(intervalMax) && intervalMax > intervalMin) {
-            try {
-                Thread.sleep(random.nextInt(intervalMax - intervalMin + 1) + intervalMin);
-            } catch (InterruptedException e) {
-                log.error(e.getMessage(), e);
-            }
-        }
+        safeFrequencyControl();
         String body = HttpUtil.getByHttpClientWithChrome(url, charset, getCookie());
         if (Objects.isNull(body) || body.length() < Constants.INVALID_HTML_LENGTH) {
             return processErrorHttpResult(url, charset);
@@ -79,6 +81,69 @@ public class CrawlHttpClient {
         }
         RETRY_COUNT.remove();
         return null;
+    }
+    private int getReqInterval(String key) {
+        return getReqInterval(key, 0);
+    }
+    private int getReqInterval(String key, int def) {
+        var intervalStr = redisTemplate.opsForValue().get(key);
+        if (Objects.nonNull(intervalStr)) {
+            return Integer.parseInt(intervalStr);
+        }
+        return def;
+    }
+
+    private void safeFrequencyControl() {
+        var intervalMin = getReqInterval("req:interval:min");
+        var intervalMax = getReqInterval("req:interval:max");
+        if (intervalMax > intervalMin) {
+            try {
+                Thread.sleep(random.nextInt(intervalMax - intervalMin + 1) + intervalMin);
+            } catch (InterruptedException e) {
+                log.error(e.getMessage(), e);
+            }
+        }
+    }
+
+    private void safeFrequencyControl(String url) {
+        try {
+            frequencyControl(url);
+        } catch (Throwable throwable) {
+            log.error("frequencyControl error: {}", throwable.getMessage(), throwable);
+        }
+    }
+
+    private void frequencyControl(String url) {
+        var limit = redisTemplate.opsForValue().get("req:interval");
+        if (limit == null) {
+            limit = DEF_LIMIT;
+        }
+        var interval = Integer.parseInt(limit);
+        var domain = obtainDomain(url);
+        LocalDateTime lastReqTime = reqTimeMap.getOrDefault(domain, LocalDateTime.now());
+        // 生成代码，取lastReqTime跟当前时间的差值毫秒数
+        long diff = LocalDateTime.now().toInstant(java.time.ZoneOffset.of("+8")).toEpochMilli() - lastReqTime.toInstant(java.time.ZoneOffset.of("+8")).toEpochMilli();
+        if (diff < interval) {
+            try {
+                Thread.sleep(interval - diff);
+            } catch (InterruptedException e) {
+                log.error("frequencyControl happened InterruptedException: {}", e.getMessage());
+            }
+        }
+        reqTimeMap.put(domain, LocalDateTime.now());
+    }
+
+    private String obtainDomain(String url) {
+        int index = url.indexOf("/", 8);
+        if (index == -1) {
+            return url;
+        }
+        return url.substring(0, index);
+    }
+
+    public static void main(String[] args) {
+        var url = "https://www.uaa.com/novel/list";
+        System.out.println(new CrawlHttpClient().obtainDomain( url));
     }
 
 }

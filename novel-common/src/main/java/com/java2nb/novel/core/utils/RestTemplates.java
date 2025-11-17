@@ -47,22 +47,22 @@ public class RestTemplates {
 
         TrustStrategy acceptingTrustStrategy = (X509Certificate[] chain, String authType) -> true;
 
-        //忽略证书
+        // 忽略证书
         SSLContext sslContext = SSLContexts.custom()
-            .loadTrustMaterial(null, acceptingTrustStrategy)
-            .build();
+                .loadTrustMaterial(null, acceptingTrustStrategy)
+                .build();
 
         SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext);
 
         Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-            .register("http", PlainConnectionSocketFactory.getSocketFactory())
-            .register("https", csf)
-            .build();
+                .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                .register("https", csf)
+                .build();
         PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(registry);
 
-        //连接池的最大连接数，0代表不限；如果取0，需要考虑连接泄露导致系统崩溃的后果
+        // 连接池的最大连接数，0代表不限；如果取0，需要考虑连接泄露导致系统崩溃的后果
         connectionManager.setMaxTotal(1000);
-        //每个路由的最大连接数,如果只调用一个地址,可以将其设置为最大连接数
+        // 每个路由的最大连接数,如果只调用一个地址,可以将其设置为最大连接数
         connectionManager.setDefaultMaxPerRoute(300);
 
         HttpClientBuilder clientBuilder = HttpClients.custom();
@@ -72,20 +72,20 @@ public class RestTemplates {
             HttpHost proxy = new HttpHost(httpProxyProperties.getIp(), httpProxyProperties.getPort());
             clientBuilder.setProxy(proxy);
             if (StringUtils.isNotBlank(httpProxyProperties.getUsername()) && StringUtils.isNotBlank(
-                httpProxyProperties.getPassword())) {
+                    httpProxyProperties.getPassword())) {
                 // 创建CredentialsProvider实例并添加代理认证信息
                 BasicCredentialsProvider provider = new BasicCredentialsProvider();
                 UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(
-                    httpProxyProperties.getUsername(), httpProxyProperties.getPassword().toCharArray());
+                        httpProxyProperties.getUsername(), httpProxyProperties.getPassword().toCharArray());
                 provider.setCredentials(new AuthScope(null, -1), credentials);
                 clientBuilder.setDefaultCredentialsProvider(provider);
             }
         }
         CloseableHttpClient httpClient = clientBuilder.setConnectionManager(connectionManager)
-            .build();
+                .build();
 
         HttpComponentsClientHttpRequestFactory requestFactory =
-            new HttpComponentsClientHttpRequestFactory();
+                new HttpComponentsClientHttpRequestFactory();
 
         requestFactory.setHttpClient(httpClient);
         requestFactory.setConnectionRequestTimeout(3000);
@@ -127,6 +127,19 @@ public class RestTemplates {
                 break;
             }
         }
+
+        // interceptors
+        restTemplate.getInterceptors().add((request, body, execution) -> {
+            System.out.println("=== Outgoing Request Headers ===");
+            request.getHeaders().forEach((key, value) -> System.out.println(key + ": " + value));
+
+            var response = execution.execute(request, body);
+            // 打印响应头
+            System.out.println("=== Incoming Response Headers ===");
+            response.getHeaders().forEach((key, value) ->
+                    System.out.println(key + ": " + value));
+            return response;
+        });
         return restTemplate;
     }
 
