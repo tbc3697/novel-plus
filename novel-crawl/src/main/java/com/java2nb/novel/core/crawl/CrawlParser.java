@@ -123,7 +123,11 @@ public class CrawlParser {
                         if (isFindScore) {
                             String score = scoreMatch.group(1);
                             //设置评分
-                            book.setScore(Float.parseFloat(score));
+                            try {
+                                book.setScore(Float.parseFloat(score));
+                            } catch (Throwable e) {
+                                log.error("评分转换失败:{}", e.getMessage());
+                            }
                         }
                     }
                     // 访问次数
