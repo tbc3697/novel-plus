@@ -303,7 +303,14 @@ public class CrawlParser {
                     //查询章节内容
                     String contentHtml = crawlHttpClient.get(contentUrl, ruleBean.getCharset());
                     if (contentHtml != null && !contentHtml.contains("正在手打中")) {
-                        String content = contentHtml.substring(contentHtml.indexOf(ruleBean.getContentStart()) + ruleBean.getContentStart().length());
+                        var contentHtmlStart = ruleBean.getContentStart();
+                        if (contentHtmlStart.contains("{bookId}")) {
+                            contentHtmlStart = contentHtmlStart.replace("{bookId}", sourceBookId);
+                        }
+                        if (contentHtmlStart.contains("{indexId}")) {
+                            contentHtmlStart = contentHtmlStart.replace("{indexId}", sourceIndexId);
+                        }
+                        String content = contentHtml.substring(contentHtml.indexOf(contentHtmlStart) + contentHtmlStart.length());
                         content = content.substring(0, content.indexOf(ruleBean.getContentEnd()));
                         // 小说内容过滤
                         String filterContent = ruleBean.getFilterContent();

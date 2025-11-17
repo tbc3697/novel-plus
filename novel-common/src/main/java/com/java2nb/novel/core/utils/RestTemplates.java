@@ -129,17 +129,16 @@ public class RestTemplates {
         }
 
         // interceptors
-        restTemplate.getInterceptors().add((request, body, execution) -> {
-            System.out.println("=== Outgoing Request Headers ===");
-            request.getHeaders().forEach((key, value) -> System.out.println(key + ": " + value));
-
-            var response = execution.execute(request, body);
-            // 打印响应头
-            System.out.println("=== Incoming Response Headers ===");
-            response.getHeaders().forEach((key, value) ->
-                    System.out.println(key + ": " + value));
-            return response;
-        });
+        // restTemplate.getInterceptors().add((request, body, execution) -> {
+        //     // System.out.println("=== Outgoing Request Headers ===");
+        //     // request.getHeaders().forEach((key, value) -> System.out.println(key + ": " + value));
+        //
+        //     var response = execution.execute(request, body);
+        //     // 打印响应头
+        //     // System.out.println("=== Incoming Response Headers ===");
+        //     // response.getHeaders().forEach((key, value) -> System.out.println(key + ": " + value));
+        //     return response;
+        // });
         return restTemplate;
     }
 
