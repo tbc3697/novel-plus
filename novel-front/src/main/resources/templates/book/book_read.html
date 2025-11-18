@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>阅读页面 - 小说网站</title>
+    <link rel="stylesheet" href="/css/public.css">
+    <link rel="stylesheet" href="/css/read.css">
+    <script src="/layui/layui.all.js"></script>
+</head>
+<body>
+<div th:replace="common/top :: top('10')"></div>
+
+<div class="main box_center cf">
+    <div class="read-container">
+        <div class="read-header">
+            <div class="breadcrumb">
+                <a href="/">首页</a> &gt;
+                <a id="categoryLink" href="#"></a> &gt;
+                <a id="bookLink" href="#"></a> &gt;
+                <span id="currentIndexName"></span>
+            </div>
+        </div>
+
+        <div class="read-content">
+            <div class="chapter-info">
+                <h1 id="indexName"></h1>
+                <div class="chapter-meta">
+                    <span id="updateTime"></span>
+                    <span id="wordCount"></span>
+                </div>
+            </div>
+
+            <div class="chapter-content" id="content">
+                <!-- 章节内容将通过JavaScript动态加载 -->
+            </div>
+
+            <div class="navigation-buttons">
+                <a id="prevChapterBtn" class="nav-btn prev" href="#">上一章</a>
+                <a id="directoryBtn" class="nav-btn directory" href="#">目录</a>
+                <a id="nextChapterBtn" class="nav-btn next" href="#">下一章</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="common/footer :: footer"></div>
+<div th:replace="common/js :: js"></div>
+
+<script src="/javascript/jquery.min.js"></script>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookId = urlParams.get('bookId');
+    const indexId = urlParams.get('indexId');
+
+    $(document).ready(function() {
+        if (bookId && indexId) {
+            loadChapter(bookId, indexId);
+        } else {
+            layer.alert('缺少必要参数');
+        }
+    });
+
+    function loadChapter(bookId, indexId) {
+        $.ajax({
+            url: `/book/${bookId}/${indexId}`,
+            method: 'GET',
+            success: function(response) {
+                if (response.code === 200) {
+                    const data = response.data;
+                    const book = data.book;
+                    const index = data.index;
+                    const content = data.content;
+                    const prevIndex = data.prevIndex;
+                    const nextIndex = data.nextIndex;
+
+                    // 更新面包屑导航
+                    $('#categoryLink').attr('href', `/book/bookclass.html?c=${book.catId}`).text(book.catName);
+                    $('#bookLink').attr('href', `/book/book_info.html?id=${book.id}`).text(book.bookName);
+                    $('#currentIndexName').text(index.indexName);
+
+                    // 显示章节信息
+                    $('#indexName').text(index.indexName);
+                    $('#updateTime').text(`更新时间：${new Date(index.createTime).toLocaleString()}`);
+                    $('#wordCount').text(`字数：${index.wordCount}`);
+                    $('#content').html(`<p>${content.content.replace(/\n/g, '</p><p>')}</p>`);
+
+                    // 设置导航按钮
+                    $('#directoryBtn').attr('href', `/book/book_info.html?id=${bookId}`);
+
+                    if (prevIndex) {
+                        $('#prevChapterBtn').attr('href', `/book/book_read.html?bookId=${bookId}&indexId=${prevIndex.id}`);
+                    } else {
+                        $('#prevChapterBtn').addClass('disabled').attr('href', 'javascript:void(0)');
+                    }
+
+                    if (nextIndex) {
+                        $('#nextChapterBtn').attr('href', `/book/book_read.html?bookId=${bookId}&indexId=${nextIndex.id}`);
+                    } else {
+                        $('#nextChapterBtn').addClass('disabled').attr('href', 'javascript:void(0)');
+                    }
+
+                    // 添加阅读记录
+                    addReadHistory(bookId, indexId);
+                } else {
+                    layer.alert(response.msg || '获取章节内容失败');
+                }
+            },
+            error: function() {
+                layer.alert('网络异常，请稍后再试');
+            }
+        });
+    }
+
+    function addReadHistory(bookId, indexId) {
+        $.ajax({
+            url: '/user/addReadHistory',
+            method: 'POST',
+            data: {
+                bookId: bookId,
+                preContentId: indexId
+            },
+            success: function(response) {
+                // 不需要特殊处理
+            }
+        });
+    }
+</script>
+</body>
+</html>

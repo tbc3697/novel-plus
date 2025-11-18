@@ -1,7 +1,10 @@
 package com.java2nb.novel.core.utils;
 
+import com.java2nb.novel.core.bean.UserDetails;
 import com.java2nb.novel.core.cache.CacheKey;
 import com.java2nb.novel.core.cache.CacheService;
+
+import javax.security.auth.Subject;
 
 /**
  * 模板操作工具类
@@ -18,6 +21,8 @@ public class ThreadLocalUtil {
      * 存储当前会话的sessionID
      * */
     private static final ThreadLocal<String> clientId = new ThreadLocal<>();
+
+    private static final ThreadLocal<UserDetails> USER_DETAILS = new ThreadLocal<>();
 
     /**
      * 设置当前应该访问的模板目录
@@ -45,6 +50,12 @@ public class ThreadLocalUtil {
         clientId.set(id);
     }
 
+    public static void setUserDetails(UserDetails userDetails) {
+        USER_DETAILS.set(userDetails);
+    }
 
+    public static void revokeUserDetails() {
+        USER_DETAILS.remove();
+    }
 
 }

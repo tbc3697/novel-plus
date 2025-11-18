@@ -30,6 +30,8 @@ public class BookSpVO {
 
     private Long updatePeriod;
 
+    private Integer crawlSource;
+
     @Pattern(regexp = "^(last_index_update_time|word_count|visit_count)$")
     private String sort;
 

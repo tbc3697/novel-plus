@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>书籍列表 - 小说网站</title>
+    <link rel="stylesheet" href="/css/public.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/book.css">
+    <script src="/layui/layui.all.js"></script>
+</head>
+<body>
+<div th:replace="common/top :: top('1')"></div>
+
+<div class="main box_center cf">
+    <div class="channelWrap channelBooklist cf mb50">
+        <div class="bookStore">
+            <div class="bookList">
+                <ul id="bookContainer">
+                    <!-- 书籍列表将通过JavaScript动态加载 -->
+                </ul>
+            </div>
+
+            <div id="pagination" class="pagination"></div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="common/footer :: footer"></div>
+<div th:replace="common/js :: js"></div>
+
+<script src="/javascript/jquery.min.js"></script>
+<script>
+    let currentPage = 1;
+    const pageSize = 20;
+
+    $(document).ready(function() {
+        loadBooks(currentPage, pageSize);
+    });
+
+    function loadBooks(pageNum, pageSize) {
+        $.ajax({
+            url: '/book/list',
+            method: 'GET',
+            data: {
+                page: pageNum,
+                size: pageSize
+            },
+            success: function(response) {
+                if (response.code === 200) {
+                    renderBooks(response.data.list);
+                    renderPagination(response.data.total, response.data.pageNum, response.data.pageSize);
+                } else {
+                    layer.alert(response.msg || '获取书籍列表失败');
+                }
+            },
+            error: function() {
+                layer.alert('网络异常，请稍后再试');
+            }
+        });
+    }
+
+    function renderBooks(books) {
+        let html = '';
+
+        books.forEach(function(book) {
+            html += `
+        <li>
+            <div class="bookBox cf">
+                <a href="/book/book_info.html?id=${book.id}" class="bookImg">
+                    <img src="${book.picUrl || '/images/default_cover.jpg'}" alt="${book.bookName}">
+                </a>
+                <div class="bookInfo">
+                    <h3><a href="/book/book_info.html?id=${book.id}">${book.bookName}</a></h3>
+                    <div class="author">${book.authorName}</div>
+                    <div class="desc">${book.bookDesc.length > 100 ? book.bookDesc.substring(0, 100) + '...' : book.bookDesc}</div>
+                    <div class="tags">
+                        <span class="tag">${book.catName}</span>
+                        <span class="status">${book.bookStatus === 0 ? '连载中' : '已完结'}</span>
+                    </div>
+                </div>
+            </div>
+        </li>`;
+        });
+
+        $('#bookContainer').html(html);
+    }
+
+    function renderPagination(total, pageNum, pageSize) {
+        layui.use('laypage', function(){
+            var laypage = layui.laypage;
+
+            laypage.render({
+                elem: 'pagination',
+                count: total,
+                curr: pageNum,
+                limit: pageSize,
+                jump: function(obj, first){
+                    if(!first) {
+                        loadBooks(obj.curr, obj.limit);
+                    }
+                }
+            });
+        });
+    }
+</script>
+</body>
+</html>

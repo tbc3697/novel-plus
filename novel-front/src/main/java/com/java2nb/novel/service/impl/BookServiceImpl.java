@@ -11,10 +11,7 @@ import com.java2nb.novel.core.utils.StringUtil;
 import com.java2nb.novel.entity.Book;
 import com.java2nb.novel.entity.*;
 import com.java2nb.novel.mapper.*;
-import com.java2nb.novel.service.AuthorService;
-import com.java2nb.novel.service.BookService;
-import com.java2nb.novel.service.FileService;
-import com.java2nb.novel.service.LikeService;
+import com.java2nb.novel.service.*;
 import com.java2nb.novel.vo.*;
 import io.github.xxyopen.model.page.PageBean;
 import io.github.xxyopen.model.page.builder.pagehelper.PageBuilder;
@@ -69,6 +66,8 @@ public class BookServiceImpl implements BookService {
      */
     @Value("${pic.save.path}")
     private String picSavePath;
+
+    private final UserDetailHolder userDetailHolder;
 
     private final FrontBookSettingMapper bookSettingMapper;
 
@@ -207,7 +206,10 @@ public class BookServiceImpl implements BookService {
             long time = cur - period;
             params.setUpdateTimeMin(new Date(time));
         }
-
+        var userCrawlSource = userDetailHolder.getUserCrawlSource();
+        if (userCrawlSource != null ) {
+            params.setCrawlSource(userCrawlSource);
+        }
         PageHelper.startPage(page, pageSize);
 
         return PageBuilder.build(bookMapper.searchByPage(params));

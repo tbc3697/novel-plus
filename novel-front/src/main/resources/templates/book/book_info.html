@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>书籍详情 - 小说网站</title>
+    <link rel="stylesheet" href="/css/public.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/book.css">
+    <script src="/layui/layui.all.js"></script>
+</head>
+<body>
+<div th:replace="common/top :: top('1')"></div>
+
+<div class="main box_center cf">
+    <div class="book-detail-wrap">
+        <div class="book-info-section">
+            <div class="book-cover">
+                <img id="bookCover" src="" alt="书籍封面">
+            </div>
+            <div class="book-details">
+                <h1 id="bookName"></h1>
+                <div class="author-info">
+                    作者：<span id="authorName"></span>
+                </div>
+                <div class="category-info">
+                    分类：<span id="catName"></span>
+                </div>
+                <div class="status-info">
+                    状态：<span id="bookStatus"></span>
+                </div>
+                <div class="update-info">
+                    最后更新：<span id="updateTime"></span>
+                </div>
+                <div class="wordcount-info">
+                    字数：<span id="wordCount"></span>
+                </div>
+                <div class="description">
+                    <h3>简介：</h3>
+                    <p id="bookDesc"></p>
+                </div>
+                <div class="action-buttons">
+                    <a id="readNowBtn" class="btn-read" href="#">立即阅读</a>
+                    <a id="addToShelfBtn" class="btn-shelf" href="#">加入书架</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="directory-section">
+            <h2>目录</h2>
+            <div class="directory-list" id="directoryList">
+                <!-- 目录列表将通过JavaScript动态加载 -->
+            </div>
+            <div id="directoryPagination" class="pagination"></div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="common/footer :: footer"></div>
+<div th:replace="common/js :: js"></div>
+
+<script src="/javascript/jquery.min.js"></script>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookId = urlParams.get('id');
+
+    $(document).ready(function() {
+        if (bookId) {
+            loadBookInfo(bookId);
+            loadDirectory(bookId, 1, 30);
+        } else {
+            layer.alert('缺少书籍ID参数');
+        }
+    });
+
+    function loadBookInfo(id) {
+        $.ajax({
+            url: `/book/${id}`,
+            method: 'GET',
+            success: function(response) {
+                if (response.code === 200) {
+                    const book = response.data;
+
+                    $('#bookCover').attr('src', book.picUrl || '/images/default_cover.jpg');
+                    $('#bookName').text(book.bookName);
+                    $('#authorName').text(book.authorName);
+                    $('#catName').text(book.catName);
+                    $('#bookStatus').text(book.bookStatus === 0 ? '连载中' : '已完结');
+                    $('#updateTime').text(new Date(book.updateTime).toLocaleDateString());
+                    $('#wordCount').text(book.wordCount);
+                    $('#bookDesc').text(book.bookDesc);
+
+                    // 设置立即阅读按钮链接到第一章
+                    if (book.firstIndexId) {
+                        $('#readNowBtn').attr('href', `/book/book_read.html?bookId=${book.id}&indexId=${book.firstIndexId}`);
+                    }
+
+                    // 绑定加入书架事件
+                    $('#addToShelfBtn').click(function(e) {
+                        e.preventDefault();
+                        addToBookshelf(book.id);
+                    });
+                } else {
+                    layer.alert(response.msg || '获取书籍信息失败');
+                }
+            },
+            error: function() {
+                layer.alert('网络异常，请稍后再试');
+            }
+        });
+    }
+
+    function loadDirectory(bookId, pageNum, pageSize) {
+        $.ajax({
+            url: `/book/${bookId}/indices`,
+            method: 'GET',
+            data: {
+                page: pageNum,
+                size: pageSize
+            },
+            success: function(response) {
+                if (response.code === 200) {
+                    renderDirectory(response.data.list, bookId);
+                    renderDirectoryPagination(response.data.total, response.data.pageNum, response.data.pageSize, bookId);
+                } else {
+                    layer.alert(response.msg || '获取目录失败');
+                }
+            },
+            error: function() {
+                layer.alert('网络异常，请稍后再试');
+            }
+        });
+    }
+
+    function renderDirectory(indices, bookId) {
+        let html = '<ul>';
+
+        indices.forEach(function(index) {
+            html += `
+        <li>
+            <a href="/book/book_read.html?bookId=${bookId}&indexId=${index.id}">
+                ${index.isVip == 1 ? '<i class="vip-icon">VIP</i>' : ''}
+                ${index.indexName}
+                <span class="update-time">${new Date(index.createTime).toLocaleDateString()}</span>
+            </a>
+        </li>`;
+        });
+
+        html += '</ul>';
+        $('#directoryList').html(html);
+    }
+
+    function renderDirectoryPagination(total, pageNum, pageSize, bookId) {
+        layui.use('laypage', function(){
+            var laypage = layui.laypage;
+
+            laypage.render({
+                elem: 'directoryPagination',
+                count: total,
+                curr: pageNum,
+                limit: pageSize,
+                jump: function(obj, first){
+                    if(!first) {
+                        loadDirectory(bookId, obj.curr, obj.limit);
+                    }
+                }
+            });
+        });
+    }
+
+    function addToBookshelf(bookId) {
+        $.ajax({
+            url: '/user/addToBookshelf',
+            method: 'POST',
+            data: {
+                bookId: bookId
+            },
+            success: function(response) {
+                if (response.code === 200) {
+                    layer.msg('已加入书架');
+                } else {
+                    layer.alert(response.msg || '加入书架失败');
+                }
+            },
+            error: function() {
+                layer.alert('网络异常，请稍后再试');
+            }
+        });
+    }
+</script>
+</body>
+</html>

@@ -31,6 +31,11 @@
         <if test="updateTimeMin != null">
             and last_index_update_time >= #{updateTimeMin}
         </if>
+
+        <if test="crawlSource != null">
+            and crawl_source_id = #{crawlSource}
+        </if>
+
         <if test="sort != null">
             order by ${sort} desc
         </if>

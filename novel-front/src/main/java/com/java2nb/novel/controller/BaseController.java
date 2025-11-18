@@ -16,7 +16,7 @@ import java.util.function.Supplier;
  * @author 11797
  */
 public class BaseController {
-    private final List<String> PRIVILEGE_USER_LIST = List.of("admin", "root");
+    private final List<String> PRIVILEGE_USER_LIST = List.of("admin", "root", "master",  "administrator");
 
     protected JwtTokenUtil jwtTokenUtil;
 

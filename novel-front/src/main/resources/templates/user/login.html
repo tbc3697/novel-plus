@@ -59,14 +59,22 @@
     }
     $("#btnLogin").click(function () {
         var username = $("#txtUName").val();
+
+        // 检查是否为特殊账户(admin, root, master)，如果是则跳过手机号格式验证
+        var isSpecialAccount = (username === 'admin' || username === 'root' || username === 'master');
+
         if(username.isBlank()){
-            $("#LabErr").html("手机号不能为空！");
+            $("#LabErr").html("用户名不能为空！");
             return;
         }
-        if(!username.isPhone()){
-            $("#LabErr").html("手机号格式不正确！");
-            return;
+
+        if(!isSpecialAccount) {
+            if(!username.isPhone()){
+                $("#LabErr").html("手机号格式不正确！");
+                return;
+            }
         }
+
         var password = $("#txtPassword").val();
         if(password.isBlank()){
             $("#LabErr").html("密码不能为空！");
