@@ -10,19 +10,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-@Component@Slf4j
+@Component
+@Slf4j
 public class UserDetailHolder {
     private static final long S_U_L = 100000000L;
 
     private HttpServletRequest request;
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
-    @Autowired
-    private UserService userService;
 
     public String getToken() {
-        String token = CookieUtil.getCookie(request,"Authorization");
-        if(token != null){
+        String token = CookieUtil.getCookie(request, "Authorization");
+        if (token != null) {
             return token;
         }
         return request.getHeader("Authorization");
@@ -34,9 +33,9 @@ public class UserDetailHolder {
 
     public UserDetails getUserDetails() {
         String token = getToken();
-        if(StringUtils.isBlank(token)){
+        if (StringUtils.isBlank(token)) {
             return null;
-        }else{
+        } else {
             return jwtTokenUtil.getUserDetailsFromToken(token);
         }
     }
