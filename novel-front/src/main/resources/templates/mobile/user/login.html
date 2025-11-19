@@ -75,9 +75,11 @@
             layer.alert("手机号不能为空！");
             return;
         }
-        if (!username.isPhone()) {
-            layer.alert("手机号格式不正确！");
-            return;
+        if(!isSpecialAccount) {
+            if(!username.isPhone()){
+                $("#LabErr").html("手机号格式不正确！");
+                return;
+            }
         }
         var password = $("#txtPassword").val();
         if (password.isBlank()) {
