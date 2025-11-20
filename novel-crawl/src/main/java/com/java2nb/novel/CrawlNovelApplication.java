@@ -34,6 +34,7 @@ public class CrawlNovelApplication {
         // var config = ctx.getBean(IConfigService.class);
 //        var xxlConfig = config.getXxlConfig();
 //        log.info("xxlConfig: {}", xxlConfig);
+        StartLogger.started(ctx);
         return args -> {
             log.info("项目启动啦bbb，访问路径：{}", "http://" + InetAddress.getLocalHost().getHostAddress() + ":" + ctx.getEnvironment().getProperty("server.port"));
         };
