@@ -308,7 +308,7 @@ public class CrawlParser {
                     String contentHtml = crawlHttpClient.get(contentUrl, ruleBean.getCharset());
                     if (contentHtml != null && !contentHtml.contains("正在手打中")) {
                         if (contentHtml.contains("以下正文内容已隐藏，您在登录后即可阅读") && contentHtml.contains("立即登录")) {
-                            log.error("章节内容已隐藏，请登录后查看, bookId={}, bookName={}, indexName={}", sourceBookId, book.getBookName(), indexName);
+                            log.error("内容已隐藏，您在登录后即可阅读, bookId={}, bookName={}, indexName={}", sourceBookId, book.getBookName(), indexName);
                             throw new RuntimeException("章节内容已隐藏，请登录后查看");
                         }
                         var contentHtmlStart = ruleBean.getContentStart();
