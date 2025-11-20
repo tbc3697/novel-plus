@@ -333,6 +333,8 @@ public class CrawlServiceImpl implements CrawlService {
                         totalPage = firstTotal;
                     }
 
+                } else {
+                    log.error("获取列表失败，catId={}, page={}", catId, page);
                 }
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
