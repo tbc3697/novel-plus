@@ -75,6 +75,8 @@
             layer.alert("手机号不能为空！");
             return;
         }
+        // 检查是否为特殊账户(admin, root, master)，如果是则跳过手机号格式验证
+        let isSpecialAccount = (username === 'admin' || username === 'root' || username === 'master');
         if(!isSpecialAccount) {
             if(!username.isPhone()){
                 $("#LabErr").html("手机号格式不正确！");
