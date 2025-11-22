@@ -8,6 +8,7 @@ import com.java2nb.novel.service.BookContentService;
 import com.java2nb.novel.service.BookService;
 import com.java2nb.novel.utils.Constants;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.mybatis.dynamic.sql.render.RenderingStrategies;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -29,6 +31,7 @@ import static org.mybatis.dynamic.sql.select.SelectDSL.select;
 /**
  * @author Administrator
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BookServiceImpl implements BookService {
@@ -98,12 +101,14 @@ public class BookServiceImpl implements BookService {
                 });
                 bookIndexMapper.insertMultiple(bookIndexList);
                 bookContentServiceMap.get(storageType).saveBookContent(bookContentList, book.getId());
-
+                log.info("已插入book数量：{}", inserted.incrementAndGet());
             }
         }
 
 
     }
+
+    private AtomicInteger inserted = new AtomicInteger(0);
 
     @Override
     public List<Book> queryNeedUpdateBook(Date startDate, int limit) {
