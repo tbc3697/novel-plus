@@ -278,6 +278,9 @@ public class CrawlServiceImpl implements CrawlService {
                     Pattern bookIdPatten = Pattern.compile(ruleBean.getBookIdPatten());
                     Matcher bookIdMatcher = bookIdPatten.matcher(bookListHtml);
                     boolean isFindBookId = bookIdMatcher.find();
+                    if (!isFindBookId) {
+                        log.error("未发现bookId，catId={}, page={}", catId, page);
+                    }
                     while (isFindBookId) {
                         try {
                             // 1.阻塞过程（使用了 sleep,同步锁的 wait,socket 中的 receiver,accept 等方法时）捕获中断异常InterruptedException来退出线程。
