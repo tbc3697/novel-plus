@@ -32,8 +32,13 @@ import org.mybatis.dynamic.sql.render.RenderingStrategies;
 import org.mybatis.dynamic.sql.select.render.SelectStatementProvider;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.Period;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -62,12 +67,16 @@ public class CrawlServiceImpl implements CrawlService {
 
     private final CrawlHttpClient crawlHttpClient;
 
-    private final Map<Integer, Boolean> sourceStatusCache = new ConcurrentHashMap<>();
     @Getter
     private final Map<Integer, Integer> sourceOffsetCache = new ConcurrentHashMap<>();
 
     @Getter
     private final Map<Integer, Map<Integer, Integer>> runningTaskCache = new ConcurrentHashMap<>();
+
+    private TimePeriod SLEEP_PERIOD = new TimePeriod(
+            LocalTime.of(4, 58),
+            LocalTime.of(5, 2)
+    );
 
 
     @Override
@@ -284,6 +293,14 @@ public class CrawlServiceImpl implements CrawlService {
                         log.error("当前页已采集完，从未发现bookId，catId={}, page={}", catId, page);
                     }
                     while (isFindBookId) {
+                        if (SLEEP_PERIOD.isCurrentTimeWithinPeriod()) {
+                            try {
+                                TimeUnit.SECONDS.sleep(4);
+                            } catch (InterruptedException e) {
+                                log.error(e.getMessage(), e);
+                            }
+                            continue;
+                        }
                         findCount++;
                         try {
                             // 1.阻塞过程（使用了 sleep,同步锁的 wait,socket 中的 receiver,accept 等方法时）捕获中断异常InterruptedException来退出线程。
@@ -315,7 +332,7 @@ public class CrawlServiceImpl implements CrawlService {
 
                         isFindBookId = bookIdMatcher.find();
                     }
-                    log.info("当前页已采集完，catId={}, page={}, 本页共发现书籍：{} 本, 处理 {} 本 ", catId, page, findCount, processCount);
+                    log.info("当前页已采集完，catId={}, page={}, 本页共发现：{} , 处理 {} ", catId, page, findCount, processCount);
 
                     var totalPageValue = ruleBean.catIdTotalPage(catId);
                     if (totalPageValue == null) {
@@ -475,6 +492,33 @@ public class CrawlServiceImpl implements CrawlService {
         var matcher2 = Pattern.compile("page=(\\d+)\"[^>]*class=\"item\">(\\d+)</a></div>\\s*<div class=\"arrow_box\">").matcher(str);
         if (matcher2.find()) {
             System.out.println("总页数2: " + matcher2.group(1)); // 输出 "213"
+        }
+    }
+
+    @Getter
+    class TimePeriod {
+        private LocalTime startTime;
+        private LocalTime endTime;
+
+        public TimePeriod(LocalTime start, LocalTime end) {
+            this.startTime = start;
+            this.endTime = end;
+        }
+
+        // 判断指定时间是否在时间段内
+        public boolean isWithinPeriod(LocalTime time) {
+            if (startTime.isBefore(endTime)) {
+                // 同一天的情况：4:58 - 5:02
+                return !time.isBefore(startTime) && time.isBefore(endTime);
+            } else {
+                // 跨天的情况：23:00 - 1:00
+                return !time.isBefore(startTime) || !time.isAfter(endTime);
+            }
+        }
+
+        // 判断当前时间是否在时间段内
+        public boolean isCurrentTimeWithinPeriod() {
+            return isWithinPeriod(LocalTime.now());
         }
     }
 
