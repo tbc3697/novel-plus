@@ -56,5 +56,7 @@ rules:
 
 
 props:
-  # 是否在日志中打印 SQL
-  sql-show: true
+  # 显示SQL
+  sql-show: false
+  # 显示简单SQL
+  sql-simple: true

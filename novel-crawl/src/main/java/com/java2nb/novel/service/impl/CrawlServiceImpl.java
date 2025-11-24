@@ -262,6 +262,8 @@ public class CrawlServiceImpl implements CrawlService {
 
         Set<String> bookIdSet = new HashSet<>();
         while (sourceMap.get(catId) <= totalPage) {
+            var findCount = 0;
+            var processCount = 0;
             sourceMap = runningTaskCache.get(sourceId);
             if (sourceMap == null) {
                 log.info("任务已终止，sourceId={}", sourceId);
@@ -279,9 +281,10 @@ public class CrawlServiceImpl implements CrawlService {
                     Matcher bookIdMatcher = bookIdPatten.matcher(bookListHtml);
                     boolean isFindBookId = bookIdMatcher.find();
                     if (!isFindBookId) {
-                        log.error("未发现bookId，catId={}, page={}", catId, page);
+                        log.error("当前页已采集完，从未发现bookId，catId={}, page={}", catId, page);
                     }
                     while (isFindBookId) {
+                        findCount++;
                         try {
                             // 1.阻塞过程（使用了 sleep,同步锁的 wait,socket 中的 receiver,accept 等方法时）捕获中断异常InterruptedException来退出线程。
                             // 2.非阻塞过程中通过判断中断标志来退出线程。
@@ -295,6 +298,7 @@ public class CrawlServiceImpl implements CrawlService {
                                 log.info("重复采集，bookId：{}", bookId);
                             } else {
                                 bookIdSet.add(bookId);
+                                processCount++;
                                 parseBookAndSave(catId, ruleBean, sourceId, bookId, null);
                             }
 
@@ -310,10 +314,8 @@ public class CrawlServiceImpl implements CrawlService {
                         }
 
                         isFindBookId = bookIdMatcher.find();
-                        if (!isFindBookId) {
-                            log.info("当前页已采集完，catId={}, page={}", catId, page);
-                        }
                     }
+                    log.info("当前页已采集完，catId={}, page={}, 本页共发现书籍：{} 本, 处理 {} 本 ", catId, page, findCount, processCount);
 
                     var totalPageValue = ruleBean.catIdTotalPage(catId);
                     if (totalPageValue == null) {
@@ -337,17 +339,17 @@ public class CrawlServiceImpl implements CrawlService {
                     }
 
                 } else {
-                    log.error("获取列表失败，catId={}, page={}", catId, page);
+                    log.error("当前页已采集完（获取列表失败），catId={}, page={}", catId, page);
                 }
             } catch (Exception e) {
-                log.error(e.getMessage(), e);
+                log.error("当前页已采集完（发生异常），catId={}, page={}, msg={}, findCount={}, processCount={}", catId, page, e.getMessage(), findCount, processCount, e);
             }
             if (page == totalPage) {
                 // 第一遍采集完成，翻到第一页，继续第二次采集，适用于分页数比较少的最近更新列表
 //                sourceMap.put(catId, 1);
                 log.info("当前cat已采集完所有页，catId={}, page={}", catId, page);
             }
-            sourceMap.put(catId, page+1);
+            sourceMap.put(catId, page + 1);
         }
     }
 
@@ -434,34 +436,34 @@ public class CrawlServiceImpl implements CrawlService {
 
     public static void main(String[] args) {
         var str = """
-                <!-- 推荐标签结束 -->
-                <div class="pagination_box">
-                    <div class="content_box">
-                        <div class="arrow_box">
-                            <a href="/novel/list?keyword=&searchType=1&author=&category=明星&finished=&space=&source=&tag=&sort=2&page=1"
-                               title="上一页">
-                                <img src="/image/pre_page_icon.svg" alt="上一页"/>
-                            </a>
+                    <!-- 推荐标签结束 -->
+                    <div class="pagination_box">
+                        <div class="content_box">
+                            <div class="arrow_box">
+                                <a href="/novel/list?keyword=&searchType=1&author=&category=明星&finished=&space=&source=&tag=&sort=2&page=1"
+                                   title="上一页">
+                                    <img src="/image/pre_page_icon.svg" alt="上一页"/>
+                                </a>
+                            </div>
+                
+                                    <div><a href="/novel/list?keyword=&searchType=1&author=&category=明星&finished=&space=&source=&tag=&sort=2&page=1"
+                                            class="active">1</a></div>
+                                    <div><a href="/novel/list?keyword=&searchType=1&author=&category=明星&finished=&space=&source=&tag=&sort=2&page=2"
+                                            class="item">2</a></div>
+                                    <div><a href="/novel/list?keyword=&searchType=1&author=&category=明星&finished=&space=&source=&tag=&sort=2&page=3"
+                                            class="item">3</a></div>
+                                    <div><a href="/novel/list?keyword=&searchType=1&author=&category=明星&finished=&space=&source=&tag=&sort=2&page=4"
+                                            class="item">4</a></div>
+                
+                
+                            <div class="arrow_box">
+                                <a href="/novel/list?keyword=&searchType=1&author=&category=明星&finished=&space=&source=&tag=&sort=2&page=2"
+                                   title="下一页">
+                                    <img src="/image/nxt_page_icon.svg" alt="下一页"/>
+                                </a>
+                            </div>
                         </div>
-                
-                                <div><a href="/novel/list?keyword=&searchType=1&author=&category=明星&finished=&space=&source=&tag=&sort=2&page=1"
-                                        class="active">1</a></div>
-                                <div><a href="/novel/list?keyword=&searchType=1&author=&category=明星&finished=&space=&source=&tag=&sort=2&page=2"
-                                        class="item">2</a></div>
-                                <div><a href="/novel/list?keyword=&searchType=1&author=&category=明星&finished=&space=&source=&tag=&sort=2&page=3"
-                                        class="item">3</a></div>
-                                <div><a href="/novel/list?keyword=&searchType=1&author=&category=明星&finished=&space=&source=&tag=&sort=2&page=4"
-                                        class="item">4</a></div>
-                
-                
-                        <div class="arrow_box">
-                            <a href="/novel/list?keyword=&searchType=1&author=&category=明星&finished=&space=&source=&tag=&sort=2&page=2"
-                               title="下一页">
-                                <img src="/image/nxt_page_icon.svg" alt="下一页"/>
-                            </a>
-                        </div>
-                    </div>
-            """;
+                """;
 
         // 修改后的正则表达式，用于匹配最后一个页码链接并捕获页码数字
         var matcher = Pattern.compile("<div><a[^>]*page=(\\d+)\"[^>]*class=\"item\">\\d+</a></div>\\s*$").matcher(str);
