@@ -101,7 +101,7 @@ public class BookServiceImpl implements BookService {
                 });
                 bookIndexMapper.insertMultiple(bookIndexList);
                 bookContentServiceMap.get(storageType).saveBookContent(bookContentList, book.getId());
-                log.info("已插入book数量：{}", inserted.incrementAndGet());
+                log.info("已插入book数量：{}, latest: {}", inserted.incrementAndGet(), book.getBookName());
             }
         }
 
