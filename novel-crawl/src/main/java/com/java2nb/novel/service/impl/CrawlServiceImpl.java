@@ -295,7 +295,7 @@ public class CrawlServiceImpl implements CrawlService {
                     while (isFindBookId) {
                         if (SLEEP_PERIOD.isCurrentTimeWithinPeriod()) {
                             try {
-                                TimeUnit.SECONDS.sleep(4);
+                                TimeUnit.SECONDS.sleep(10);
                             } catch (InterruptedException e) {
                                 log.error(e.getMessage(), e);
                             }
