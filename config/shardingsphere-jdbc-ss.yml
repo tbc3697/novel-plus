@@ -57,6 +57,6 @@ rules:
 
 props:
   # 显示SQL
-  sql-show: false
+  sql-show: true
   # 显示简单SQL
   sql-simple: true
