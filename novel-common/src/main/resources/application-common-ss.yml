@@ -16,7 +16,7 @@ spring:
       timeout: 10000
       database: 15
   datasource:
-    url: jdbc:shardingsphere:absolutepath:${user.dir}/opt/novel/ss/config/shardingsphere-jdbc-ss.yml
+    url: jdbc:shardingsphere:absolutepath:${user.dir}/config/shardingsphere-jdbc-ss.yml
 
 content:
   save:
