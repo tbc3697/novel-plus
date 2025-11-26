@@ -66,7 +66,7 @@ public class CrawlParser {
      */
     public Long getCrawlSourceChapterCount(Integer sourceId) {
         return Optional.ofNullable(
-            stringRedisTemplate.opsForValue().get(CRAWL_SOURCE_CHAPTER_COUNT_CACHE_KEY + sourceId)).map(v -> {
+                stringRedisTemplate.opsForValue().get(CRAWL_SOURCE_CHAPTER_COUNT_CACHE_KEY + sourceId)).map(v -> {
             try {
                 return Long.parseLong(v);
             } catch (NumberFormatException e) {
@@ -76,7 +76,7 @@ public class CrawlParser {
     }
 
     public void parseBook(RuleBean ruleBean, String bookId, CrawlBookHandler handler)
-        throws InterruptedException {
+            throws InterruptedException {
         Book book = new Book();
         String bookDetailUrl = ruleBean.getBookDetailUrl().replace("{bookId}", bookId);
         String bookDetailHtml = crawlHttpClient.get(bookDetailUrl, ruleBean.getCharset());
@@ -86,7 +86,7 @@ public class CrawlParser {
             boolean isFindBookName = bookNameMatch.find();
             if (isFindBookName) {
                 String bookName = bookNameMatch.group(1);
-                //设置小说名
+                // 设置小说名
                 book.setBookName(bookName);
                 Pattern authorNamePatten = PatternFactory.getPattern(ruleBean.getAuthorNamePatten());
                 Matcher authorNameMatch = authorNamePatten.matcher(bookDetailHtml);
@@ -98,7 +98,7 @@ public class CrawlParser {
                     } else {
                         log.info("custom 作者名未找到，使用默认作者名");
                     }
-                    //设置作者名
+                    // 设置作者名
                     book.setAuthorName(authorName);
 
                     // 图片
@@ -111,7 +111,7 @@ public class CrawlParser {
                             if (StringUtils.isNotBlank(picUrl) && StringUtils.isNotBlank(ruleBean.getPicUrlPrefix())) {
                                 picUrl = ruleBean.getPicUrlPrefix() + picUrl;
                             }
-                            //设置封面图片路径
+                            // 设置封面图片路径
                             book.setPicUrl(picUrl);
                         }
                     }
@@ -122,7 +122,7 @@ public class CrawlParser {
                         boolean isFindScore = scoreMatch.find();
                         if (isFindScore) {
                             String score = scoreMatch.group(1);
-                            //设置评分
+                            // 设置评分
                             try {
                                 book.setScore(Float.parseFloat(score));
                             } catch (Throwable e) {
@@ -137,20 +137,20 @@ public class CrawlParser {
                         boolean isFindVisitCount = visitCountMatch.find();
                         if (isFindVisitCount) {
                             String visitCount = visitCountMatch.group(1);
-                            //设置访问次数
+                            // 设置访问次数
                             book.setVisitCount(Long.parseLong(visitCount));
                         }
                     }
 
                     String desc = bookDetailHtml.substring(
-                        bookDetailHtml.indexOf(ruleBean.getDescStart()) + ruleBean.getDescStart().length());
+                            bookDetailHtml.indexOf(ruleBean.getDescStart()) + ruleBean.getDescStart().length());
                     desc = desc.substring(0, desc.indexOf(ruleBean.getDescEnd()));
-                    //过滤掉简介中的特殊标签
+                    // 过滤掉简介中的特殊标签
                     desc = desc.replaceAll("<a[^<]+</a>", "")
-                        .replaceAll("<font[^<]+</font>", "")
-                        .replaceAll("<p>\\s*</p>", "")
-                        .replaceAll("<p>", "")
-                        .replaceAll("</p>", "<br/>");
+                            .replaceAll("<font[^<]+</font>", "")
+                            .replaceAll("<p>\\s*</p>", "")
+                            .replaceAll("<p>", "")
+                            .replaceAll("</p>", "<br/>");
                     // 小说简介过滤
                     String filterDesc = ruleBean.getFilterDesc();
                     if (StringUtils.isNotBlank(filterDesc)) {
@@ -167,7 +167,7 @@ public class CrawlParser {
                     if (desc.endsWith(bookName)) {
                         desc = desc.substring(0, desc.length() - bookName.length());
                     }
-                    //设置书籍简介
+                    // 设置书籍简介
                     book.setBookDesc(desc);
                     if (StringUtils.isNotBlank(ruleBean.getStatusPatten())) {
                         Pattern bookStatusPatten = PatternFactory.getPattern(ruleBean.getStatusPatten());
@@ -176,23 +176,23 @@ public class CrawlParser {
                         if (isFindBookStatus) {
                             String bookStatus = bookStatusMatch.group(1);
                             if (ruleBean.getBookStatusRule().get(bookStatus) != null) {
-                                //设置更新状态
+                                // 设置更新状态
                                 book.setBookStatus(ruleBean.getBookStatusRule().get(bookStatus));
                             }
                         }
                     }
 
                     if (StringUtils.isNotBlank(ruleBean.getUpadateTimePatten()) && StringUtils.isNotBlank(
-                        ruleBean.getUpadateTimeFormatPatten())) {
+                            ruleBean.getUpadateTimeFormatPatten())) {
                         Pattern updateTimePatten = PatternFactory.getPattern(ruleBean.getUpadateTimePatten());
                         Matcher updateTimeMatch = updateTimePatten.matcher(bookDetailHtml);
                         boolean isFindUpdateTime = updateTimeMatch.find();
                         if (isFindUpdateTime) {
                             String updateTime = updateTimeMatch.group(1);
-                            //设置更新时间
+                            // 设置更新时间
                             try {
                                 book.setLastIndexUpdateTime(
-                                    new SimpleDateFormat(ruleBean.getUpadateTimeFormatPatten()).parse(updateTime));
+                                        new SimpleDateFormat(ruleBean.getUpadateTimeFormatPatten()).parse(updateTime));
                             } catch (ParseException e) {
                                 log.error("解析最新章节更新时间出错", e);
                             }
@@ -202,13 +202,13 @@ public class CrawlParser {
 
                 }
                 if (book.getVisitCount() == null && book.getScore() != null) {
-                    //随机根据评分生成访问次数
+                    // 随机根据评分生成访问次数
                     book.setVisitCount(RandomBookInfoUtil.getVisitCountByScore(book.getScore()));
                 } else if (book.getVisitCount() != null && book.getScore() == null) {
-                    //随机根据访问次数生成评分
+                    // 随机根据访问次数生成评分
                     book.setScore(RandomBookInfoUtil.getScoreByVisitCount(book.getVisitCount()));
                 } else if (book.getVisitCount() == null) {
-                    //都没有，设置成固定值
+                    // 都没有，设置成固定值
                     book.setVisitCount(Constants.VISIT_COUNT_DEFAULT);
                     book.setScore(6.5f);
                 }
@@ -218,8 +218,8 @@ public class CrawlParser {
     }
 
     public boolean parseBookIndexAndContent(String sourceBookId, Book book, RuleBean ruleBean, Integer sourceId,
-        Map<Integer, BookIndex> existBookIndexMap, CrawlBookChapterHandler handler, CrawlSingleTask task)
-        throws InterruptedException {
+                                            Map<Integer, BookIndex> existBookIndexMap, CrawlBookChapterHandler handler, CrawlSingleTask task)
+            throws InterruptedException {
 
         if (task != null) {
             // 开始采集
@@ -230,14 +230,14 @@ public class CrawlParser {
 
         List<BookIndex> indexList = new ArrayList<>();
         List<BookContent> contentList = new ArrayList<>();
-        //读取目录
+        // 读取目录
         String indexListUrl = ruleBean.getBookIndexUrl().replace("{bookId}", sourceBookId);
         String indexListHtml = crawlHttpClient.get(indexListUrl, ruleBean.getCharset());
 
         if (indexListHtml != null) {
             if (StringUtils.isNotBlank(ruleBean.getBookIndexStart())) {
                 indexListHtml = indexListHtml.substring(
-                    indexListHtml.indexOf(ruleBean.getBookIndexStart()) + ruleBean.getBookIndexStart().length());
+                        indexListHtml.indexOf(ruleBean.getBookIndexStart()) + ruleBean.getBookIndexStart().length());
             }
 
             Pattern indexIdPatten = PatternFactory.getPattern(ruleBean.getIndexIdPatten());
@@ -259,7 +259,7 @@ public class CrawlParser {
 
             int indexNum = 0;
 
-            //总字数
+            // 总字数
             int totalWordCount = book.getWordCount() == null ? 0 : book.getWordCount();
 
             while (isFindIndex) {
@@ -268,19 +268,19 @@ public class CrawlParser {
                 String indexName = indexNameMatch.group(ruleBean.getIndexNameGroup());
 
                 if (hasIndex == null || !StringUtils.deleteWhitespace(hasIndex.getIndexName())
-                    .equals(StringUtils.deleteWhitespace(indexName))) {
+                        .equals(StringUtils.deleteWhitespace(indexName))) {
                     // TODO 临时适配
                     String sourceIndexId = indexIdMatch.group(ruleBean.getIndexIdGroup());
                     String bookContentUrl = ruleBean.getBookContentUrl();
                     int calStart = bookContentUrl.indexOf("{cal_");
                     if (calStart != -1) {
-                        //内容页URL需要进行计算才能得到
+                        // 内容页URL需要进行计算才能得到
                         String calStr = bookContentUrl.substring(calStart, calStart + bookContentUrl.substring(calStart).indexOf("}"));
                         String[] calArr = calStr.split("_");
                         int calType = Integer.parseInt(calArr[1]);
                         if (calType == 1) {
                             ///{cal_1_1_3}_{bookId}/{indexId}.html
-                            //第一种计算规则，去除第x个参数的最后y个字母
+                            // 第一种计算规则，去除第x个参数的最后y个字母
                             int x = Integer.parseInt(calArr[2]);
                             int y = Integer.parseInt(calArr[3]);
                             String calResult;
@@ -304,7 +304,7 @@ public class CrawlParser {
                             .replace("{bookId}", sourceBookId)
                             .replace("{indexId}", sourceIndexId);
 
-                    //查询章节内容
+                    // 查询章节内容
                     String contentHtml = crawlHttpClient.get(contentUrl, ruleBean.getCharset());
                     if (contentHtml != null && !contentHtml.contains("正在手打中")) {
                         if (contentHtml.contains("以下正文内容已隐藏，您在登录后即可阅读") && contentHtml.contains("立即登录")) {
@@ -332,7 +332,7 @@ public class CrawlParser {
                         }
                         // 去除小说内容末尾的所有换行
                         content = removeTrailingBrTags(content);
-                        //插入章节目录和章节内容
+                        // 插入章节目录和章节内容
                         BookIndex bookIndex = new BookIndex();
                         bookIndex.setIndexName(indexName);
                         bookIndex.setIndexNum(indexNum);
@@ -345,15 +345,15 @@ public class CrawlParser {
                         contentList.add(bookContent);
 
                         if (hasIndex != null) {
-                            //章节更新
+                            // 章节更新
                             bookIndex.setId(hasIndex.getId());
                             bookContent.setIndexId(hasIndex.getId());
 
-                            //计算总字数
+                            // 计算总字数
                             totalWordCount = (totalWordCount + wordCount - hasIndex.getWordCount());
                         } else {
-                            //章节插入
-                            //设置目录和章节内容
+                            // 章节插入
+                            // 设置目录和章节内容
                             Long indexId = ID_WORKER.nextId();
                             bookIndex.setId(indexId);
                             bookIndex.setBookId(book.getId());
@@ -362,7 +362,7 @@ public class CrawlParser {
 
                             bookContent.setIndexId(indexId);
 
-                            //计算总字数
+                            // 计算总字数
                             totalWordCount += wordCount;
                         }
                         bookIndex.setUpdateTime(currentDate);
@@ -384,8 +384,8 @@ public class CrawlParser {
             }
 
             if (!indexList.isEmpty()) {
-                //如果有爬到最新章节，则设置小说主表的最新章节信息
-                //获取爬取到的最新章节
+                // 如果有爬到最新章节，则设置小说主表的最新章节信息
+                // 获取爬取到的最新章节
                 BookIndex lastIndex = indexList.getLast();
                 book.setLastIndexId(lastIndex.getId());
                 book.setLastIndexName(lastIndex.getIndexName());
@@ -422,5 +422,15 @@ public class CrawlParser {
     public static String removeTrailingBrTags(String str) {
         return str.replaceAll("(?i)(?:\\s*<\\s*br\\s*/?\\s*>)++(?:\\s|\\u3000)*$", "");
     }
+
+    public static String removeStartingBrTags(String str) {
+        if (str.startsWith("code=\"0\">")) {
+            // return str.replace("code=\"0\">", "");
+            return str.replaceFirst("code=\"0\">", "");
+            // return str.substring(9);
+        }
+        return str;
+    }
+
 
 }

@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.render.RenderingStrategies;
 import org.mybatis.dynamic.sql.select.render.SelectStatementProvider;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -73,7 +74,7 @@ public class CrawlServiceImpl implements CrawlService {
 
     @Getter
     private final Map<Integer, Map<Integer, Integer>> runningTaskCache = new ConcurrentHashMap<>();
-    private final RedisTemplate<Object, Object> redisTemplate;
+    private final StringRedisTemplate redisTemplate;
 
     private TimePeriod SLEEP_PERIOD = new TimePeriod(
             LocalTime.of(4, 58),
@@ -173,9 +174,9 @@ public class CrawlServiceImpl implements CrawlService {
     private int getCurrentPage(int catId) {
         try {
             var pageObj = redisTemplate.opsForValue().get("crawl:page:" + catId);
-            return Integer.parseInt(String.valueOf(pageObj));
+            return Integer.parseInt(pageObj);
         } catch (Throwable e) {
-            log.error("error-crawl，解析分页异常");
+            log.error("error-crawl，解析分页异常: {}", e.getMessage());
         }
         return 0;
     }
