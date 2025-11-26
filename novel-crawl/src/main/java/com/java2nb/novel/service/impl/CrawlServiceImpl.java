@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.render.RenderingStrategies;
 import org.mybatis.dynamic.sql.select.render.SelectStatementProvider;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -72,6 +73,7 @@ public class CrawlServiceImpl implements CrawlService {
 
     @Getter
     private final Map<Integer, Map<Integer, Integer>> runningTaskCache = new ConcurrentHashMap<>();
+    private final RedisTemplate<Object, Object> redisTemplate;
 
     private TimePeriod SLEEP_PERIOD = new TimePeriod(
             LocalTime.of(4, 58),
@@ -166,6 +168,16 @@ public class CrawlServiceImpl implements CrawlService {
             log.error(e.getMessage(), e);
             throw e;
         }
+    }
+
+    private int getCurrentPage(int catId) {
+        try {
+            var pageObj = redisTemplate.opsForValue().get("crawl:page:" + catId);
+            return Integer.parseInt(String.valueOf(pageObj));
+        } catch (Throwable e) {
+            log.error("error-crawl，解析分页异常");
+        }
+        return 0;
     }
 
     @Override
@@ -265,7 +277,11 @@ public class CrawlServiceImpl implements CrawlService {
             return;
         }
         // 当前页码1
-        sourceMap.putIfAbsent(catId, 1);
+        var initPage = getCurrentPage(catId);
+        if (initPage == 0) {
+            initPage = 1;
+        }
+        sourceMap.putIfAbsent(catId, initPage);
         int totalPage = sourceMap.get(catId);
         int firstTotal = 0;
 
@@ -366,7 +382,11 @@ public class CrawlServiceImpl implements CrawlService {
 //                sourceMap.put(catId, 1);
                 log.info("当前cat已采集完所有页，catId={}, page={}", catId, page);
             }
-            sourceMap.put(catId, page + 1);
+            var nextPage = getCurrentPage(catId);
+            if (nextPage == 0) {
+                nextPage = page + 1;
+            }
+            sourceMap.put(catId, nextPage);
         }
     }
 
