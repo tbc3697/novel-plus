@@ -332,6 +332,7 @@ public class CrawlParser {
                         }
                         // 去除小说内容末尾的所有换行
                         content = removeTrailingBrTags(content);
+                        content = removeTrailingBrTags(content);
                         // 插入章节目录和章节内容
                         BookIndex bookIndex = new BookIndex();
                         bookIndex.setIndexName(indexName);
