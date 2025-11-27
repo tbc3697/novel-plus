@@ -53,7 +53,7 @@ public class StarterListener implements ServletContextInitializer {
             new Thread(() -> {
                 log.info("程序启动,开始执行自动更新线程。。。");
                 if (config.isEnableUpdate()) {
-                    doUpdate(config.getUpdateInterval());
+                    doUpdate();
                 }
             }, "crawl-update-" + i).start();
         }
@@ -64,8 +64,10 @@ public class StarterListener implements ServletContextInitializer {
         }, "crawl-single").start();
     }
 
-    private void doUpdate(long sleepSeconds) {
+    private void doUpdate() {
         while (true) {
+            var config = getCrawlConfig();
+            var sleepSeconds = config.getUpdateInterval();
             try {
                 // 1.查询最新目录更新时间在一个月之内的前100条需要更新的数据
                 Date currentDate = new Date();
