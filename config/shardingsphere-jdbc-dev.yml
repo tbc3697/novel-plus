@@ -51,3 +51,5 @@ rules:
 props:
   # 是否在日志中打印 SQL
   sql-show: true
+  sql-simple-print: true
+  parameter-aware: false

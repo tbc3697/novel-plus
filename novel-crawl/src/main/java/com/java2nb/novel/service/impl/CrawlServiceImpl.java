@@ -30,14 +30,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.mybatis.dynamic.sql.render.RenderingStrategies;
 import org.mybatis.dynamic.sql.select.render.SelectStatementProvider;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.Period;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -343,8 +339,14 @@ public class CrawlServiceImpl implements CrawlService {
                             // 2.非阻塞过程中通过判断中断标志来退出线程。
                             log.info("任务已终止，cache Interrupted, sourceId={}", sourceId);
                             return;
-                        } catch (Throwable throwable) {
-                            log.error("error，msg={}", throwable.getMessage(), throwable);
+                        } catch (Throwable e) {
+                            // todo
+                            log.error("Error，msg={}, catId={}, page={}", e.getMessage(), catId, page, e);
+                            try {
+                                TimeUnit.MINUTES.sleep(1);
+                            } catch (InterruptedException e1) {
+                                e1.printStackTrace();
+                            }
                         }
 
                         isFindBookId = bookIdMatcher.find();
@@ -377,16 +379,18 @@ public class CrawlServiceImpl implements CrawlService {
                 }
             } catch (Exception e) {
                 log.error("当前页已采集完（发生异常），catId={}, page={}, msg={}, findCount={}, processCount={}", catId, page, e.getMessage(), findCount, processCount, e);
+                try {
+                    TimeUnit.MINUTES.sleep(2);
+                } catch (InterruptedException e1) {
+                    e.printStackTrace();
+                }
             }
             if (page == totalPage) {
                 // 第一遍采集完成，翻到第一页，继续第二次采集，适用于分页数比较少的最近更新列表
 //                sourceMap.put(catId, 1);
                 log.info("当前cat已采集完所有页，catId={}, page={}", catId, page);
             }
-            var nextPage = getCurrentPage(catId);
-            if (nextPage == 0) {
-                nextPage = page + 1;
-            }
+            var nextPage = page + 1;
             sourceMap.put(catId, nextPage);
         }
     }
