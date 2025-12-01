@@ -122,6 +122,7 @@ public class CrawlHttpClient {
         if (diff < intervalMin) {
             try {
                 var sleepMin = random.nextInt(intervalMax - (int) diff + 1) + diff;
+                log.info("sleep time:{}", sleepMin);
                 Thread.sleep(sleepMin);
             } catch (InterruptedException e) {
                 log.error("frequencyControl happened InterruptedException: {}", e.getMessage());
