@@ -1,11 +1,8 @@
 package com.java2nb.novel.utils;
 
 import com.java2nb.novel.core.utils.HttpUtil;
-import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -53,7 +50,7 @@ public class CrawlHttpClient {
     }
 
     public String doGet(String url, String charset) {
-        safeFrequencyControl();
+        safeFrequencyControl(url);
         String body = HttpUtil.getByHttpClientWithChrome(url, charset, getCookie());
         if (Objects.isNull(body) || body.length() < Constants.INVALID_HTML_LENGTH) {
             return processErrorHttpResult(url, charset);
@@ -114,23 +111,25 @@ public class CrawlHttpClient {
     }
 
     private void frequencyControl(String url) {
-        var limit = redisTemplate.opsForValue().get("req:interval");
-        if (limit == null) {
-            limit = DEF_LIMIT;
-        }
-        var interval = Integer.parseInt(limit);
+        var intervalMin = getReqInterval("req:interval:min");
+        var intervalMax = getReqInterval("req:interval:max");
+
         var domain = obtainDomain(url);
-        LocalDateTime lastReqTime = reqTimeMap.getOrDefault(domain, LocalDateTime.now());
+        var now = LocalDateTime.now();
+        LocalDateTime lastReqTime = reqTimeMap.getOrDefault(domain, now);
         // 生成代码，取lastReqTime跟当前时间的差值毫秒数
         long diff = LocalDateTime.now().toInstant(java.time.ZoneOffset.of("+8")).toEpochMilli() - lastReqTime.toInstant(java.time.ZoneOffset.of("+8")).toEpochMilli();
-        if (diff < interval) {
+        if (diff < intervalMin) {
             try {
-                Thread.sleep(interval - diff);
+                var sleepMin = random.nextInt(intervalMax - (int) diff + 1) + diff;
+                Thread.sleep(sleepMin);
             } catch (InterruptedException e) {
                 log.error("frequencyControl happened InterruptedException: {}", e.getMessage());
+            } catch (Throwable throwable) {
+                log.error("frequencyControl happened Throwable: {}", throwable.getMessage());
             }
         }
-        reqTimeMap.put(domain, LocalDateTime.now());
+        reqTimeMap.put(domain, now);
     }
 
     private String obtainDomain(String url) {
