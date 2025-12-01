@@ -150,7 +150,13 @@ public class CrawlServiceImpl implements CrawlService {
                 // 按分类开始爬虫解析任务
                 catIdRule.forEach((catIdStr, catIdRuleValue) -> {
                     final int catId = parseCatId(catIdStr);
-                    Thread thread = new Thread(() -> parseBookList(catId, ruleBean, sourceId), "craw_" + sourceId + "_" + catId);
+                    Thread thread = new Thread(() -> {
+                        try {
+                            parseBookList(catId, ruleBean, sourceId);
+                        } catch (Throwable e) {
+                            log.error("线程执行异常，catId={}, msg:,{}", catId, e.getMessage(), e);
+                        }
+                    }, "craw_" + sourceId + "_" + catId);
                     thread.start();
                 });
             }
