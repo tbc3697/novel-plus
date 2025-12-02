@@ -8,6 +8,7 @@ import com.java2nb.novel.entity.BookIndex;
 import com.java2nb.novel.entity.CrawlSingleTask;
 import com.java2nb.novel.utils.Constants;
 import com.java2nb.novel.utils.CrawlHttpClient;
+import com.java2nb.novel.utils.mail.IEmailBiz;
 import io.github.xxyopen.util.IdWorker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,15 +38,32 @@ public class CrawlParser {
 
     private final StringRedisTemplate stringRedisTemplate;
 
+    private final IEmailBiz emailBiz;
+
     /**
      * 爬虫源采集章节数量缓存key
      */
     private static final String CRAWL_SOURCE_CHAPTER_COUNT_CACHE_KEY = "crawlSource:chapterCount:";
 
+    private static final String notifyEmail = "312383074@qq.com";
+
     /**
      * 爬虫任务进度
      */
     private final Map<Long, Integer> crawlTaskProgress = new HashMap<>();
+
+    private ThreadLocal<Boolean> isWaiting = ThreadLocal.withInitial(() -> false);
+
+
+    private void notifyAndWaiting(Integer sourceId) {
+        isWaiting.set(true);
+        // todo 邮件
+        emailBiz.sendContext(notifyEmail, "爬虫任务进度通知", "需要登陆或者弹窗验证: " + sourceId, false);
+    }
+
+    public void stopWaiting() {
+        isWaiting.set(false);
+    }
 
     /**
      * 获取爬虫任务进度
@@ -308,8 +326,16 @@ public class CrawlParser {
                     String contentHtml = crawlHttpClient.get(contentUrl, ruleBean.getCharset());
                     if (contentHtml != null && !contentHtml.contains("正在手打中")) {
                         if (contentHtml.contains("以下正文内容已隐藏，您在登录后即可阅读") && contentHtml.contains("立即登录")) {
-                            log.error("内容已隐藏，您在登录后即可阅读, bookId={}, bookName={}, indexName={}", sourceBookId, book.getBookName(), indexName);
-                            throw new RuntimeException("章节内容已隐藏，请登录后查看");
+                            log.error("内容已隐藏，您在登录后即可阅读, bookId={}, bookName={}, indexName={}, indexId={}", sourceBookId, book.getBookName(), indexName, sourceIndexId);
+                            notifyAndWaiting(sourceId);
+                            while (isWaiting.get()) {
+                                try {
+                                    Thread.sleep(300000);
+                                } catch (InterruptedException e) {
+                                    // todo
+                                }
+                            }
+                            throw new RuntimeException("需要登陆或者弹窗验证");
                         }
                         var contentHtmlStart = ruleBean.getContentStart();
                         if (contentHtmlStart.contains("{bookId}")) {
