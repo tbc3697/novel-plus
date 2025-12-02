@@ -2,6 +2,7 @@ package com.java2nb.novel.core.listener;
 
 import com.alibaba.fastjson2.JSON;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.java2nb.novel.core.crawl.CrawlParser;
 import com.java2nb.novel.core.crawl.RuleBean;
 import com.java2nb.novel.entity.Book;
@@ -47,7 +48,7 @@ public class StarterListener implements ServletContextInitializer {
     @Value("${crawl.update.thread}")
     private int updateThreadCount;
 
-    private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+    private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1, new ThreadFactoryBuilder().setNameFormat("crawl-waitingStopFlag-%d").build());
 
     @Override
     public void onStartup(ServletContext servletContext) {

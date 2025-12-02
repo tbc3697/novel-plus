@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -52,7 +53,7 @@ public class CrawlParser {
      */
     private final Map<Long, Integer> crawlTaskProgress = new HashMap<>();
 
-    private ThreadLocal<Boolean> isWaiting = ThreadLocal.withInitial(() -> false);
+    private final AtomicBoolean isWaiting = new AtomicBoolean(false);
 
 
     private void notifyAndWaiting(Integer sourceId) {
@@ -332,8 +333,9 @@ public class CrawlParser {
                             log.error("内容已隐藏，您在登录后即可阅读, bookId={}, bookName={}, indexName={}, indexId={}", sourceBookId, book.getBookName(), indexName, sourceIndexId);
                             notifyAndWaiting(sourceId);
                             while (isWaiting.get()) {
+                                log.info("等待用户登陆或者弹窗验证, sourceId={}", sourceId);
                                 try {
-                                    Thread.sleep(300000);
+                                    Thread.sleep(30000);
                                 } catch (InterruptedException e) {
                                     // todo
                                 }
