@@ -57,8 +57,11 @@ public class CrawlParser {
 
     private void notifyAndWaiting(Integer sourceId) {
         isWaiting.set(true);
-        // todo 邮件
-        emailBiz.sendContext(notifyEmail, "爬虫任务进度通知", "需要登陆或者弹窗验证: " + sourceId, false);
+        try {
+            emailBiz.sendContext(notifyEmail, "爬虫任务进度通知", "需要登陆或者弹窗验证: " + sourceId, false);
+        } catch (Throwable e) {
+            log.error("邮件发送失败:{}", e.getMessage(), e);
+        }
     }
 
     public void stopWaiting() {

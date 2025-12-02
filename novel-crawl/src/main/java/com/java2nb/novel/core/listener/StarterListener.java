@@ -25,6 +25,7 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -46,9 +47,14 @@ public class StarterListener implements ServletContextInitializer {
     @Value("${crawl.update.thread}")
     private int updateThreadCount;
 
+    private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
+
     @Override
     public void onStartup(ServletContext servletContext) {
+        processCrawlWaiting();
+
         var config = getCrawlConfig();
+        log.info("crawl config:{}", config);
         for (int i = 0; i < updateThreadCount; i++) {
             new Thread(() -> {
                 log.info("程序启动,开始执行自动更新线程。。。");
@@ -62,6 +68,22 @@ public class StarterListener implements ServletContextInitializer {
             log.info("程序启动,开始执行单本采集任务线程。。。");
             doSingle(config.getSingleInterval());
         }, "crawl-single").start();
+    }
+
+    private void processCrawlWaiting() {
+        log.info("程序启动,开始启动 waitingStopFlag 任务。。。");
+        executor.scheduleAtFixedRate(() -> {
+            try {
+                var flag = redisTemplate.opsForValue().get("crawl:waiting:stop");
+                if ("true".equals(flag)) {
+                    crawlParser.stopWaiting();
+                    redisTemplate.opsForValue().set("crawl:waiting:stop", "false");
+                }
+            } catch (Throwable e) {
+                log.error("flush waitingStopFlag fail:{}", e.getMessage(), e);
+            }
+        }, 0, 30, TimeUnit.SECONDS);
+        log.info("程序启动, waitingStopFlag 任务已开启");
     }
 
     private void doUpdate() {
