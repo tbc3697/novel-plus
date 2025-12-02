@@ -340,7 +340,7 @@ public class CrawlParser {
                                     // todo
                                 }
                             }
-                            throw new RuntimeException("需要登陆或者弹窗验证");
+                            throw new RuntimeException("当前采集过程遇到问题：需要登陆或者弹窗验证");
                         }
                         var contentHtmlStart = ruleBean.getContentStart();
                         if (contentHtmlStart.contains("{bookId}")) {
