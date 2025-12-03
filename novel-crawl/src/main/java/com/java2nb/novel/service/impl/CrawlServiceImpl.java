@@ -154,7 +154,7 @@ public class CrawlServiceImpl implements CrawlService {
                         try {
                             parseBookList(catId, ruleBean, sourceId);
                         } catch (Throwable e) {
-                            log.error("线程执行异常，catId={}, msg:,{}", catId, e.getMessage(), e);
+                            log.error("线程执行异常，catId={}, msg:,{}", catId, e.getMessage());
                         }
                     }, "craw_" + sourceId + "_" + catId);
                     thread.start();
@@ -349,7 +349,7 @@ public class CrawlServiceImpl implements CrawlService {
                             // todo
                             log.error("Error，msg={}, catId={}, page={}", e.getMessage(), catId, page, e);
                             try {
-                                TimeUnit.MINUTES.sleep(1);
+                                TimeUnit.SECONDS.sleep(15);
                             } catch (InterruptedException e1) {
                                 e1.printStackTrace();
                             }
