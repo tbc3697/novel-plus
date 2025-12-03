@@ -349,7 +349,7 @@ public class CrawlServiceImpl implements CrawlService {
                             // todo
                             log.error("Error，msg={}, catId={}, page={}", e.getMessage(), catId, page, e);
                             try {
-                                TimeUnit.SECONDS.sleep(15);
+                                TimeUnit.SECONDS.sleep(10);
                             } catch (InterruptedException e1) {
                                 e1.printStackTrace();
                             }

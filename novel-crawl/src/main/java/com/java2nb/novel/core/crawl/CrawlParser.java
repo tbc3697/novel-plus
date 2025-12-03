@@ -335,7 +335,7 @@ public class CrawlParser {
                             while (isWaiting.get()) {
                                 log.info("等待用户登陆或者弹窗验证, sourceId={}", sourceId);
                                 try {
-                                    Thread.sleep(30000);
+                                    Thread.sleep(10000);
                                 } catch (InterruptedException e) {
                                     // todo
                                 }
