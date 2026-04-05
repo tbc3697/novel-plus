@@ -101,7 +101,7 @@ public class StarterListener implements ServletContextInitializer {
         try {
             // 1.查询最新目录更新时间在一个月之内的前100条需要更新的数据
             Date currentDate = new Date();
-            Date startDate = DateUtils.addDays(currentDate, -30);
+            Date startDate = DateUtils.addDays(currentDate, -config.getUpdatePreDays());
             List<Book> bookList;
             synchronized (this) {
                 bookList = bookService.queryNeedUpdateBook(startDate, 100);
@@ -194,6 +194,8 @@ public class StarterListener implements ServletContextInitializer {
 
         private final boolean enableSingle = true;
         private final long singleInterval = 120L;
+
+        private final int updatePreDays = 365;
     }
 
     public static void main(String[] args) {

@@ -103,20 +103,22 @@ public class RestTemplates {
         return restTemplate;
     }
 
+    // 1. 配置 JDK 11+ 自带的 HttpClient（可自定义超时、Cookie 管理等）
+    static HttpClient jdkHttpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10)) // 连接超时
+//                .timeout(Duration.ofSeconds(10)) // 响应超时
+            .followRedirects(HttpClient.Redirect.NORMAL) // 跟随重定向（和之前适配逻辑一致）
+            // 若需 Cookie 管理，添加 CookieHandler（和 JDK HttpClient 配置一致）
+            // .cookieHandler(new CookieManager(null, CookiePolicy.ACCEPT_ALL))
+            .build();
+
+    // 2. 创建 JDK HttpClient 适配工厂（Spring 5.3+ 提供）
+    static JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(jdkHttpClient);
+
 
     @SneakyThrows
     public static RestTemplate newInstance2(String charset) {
-        // 1. 配置 JDK 11+ 自带的 HttpClient（可自定义超时、Cookie 管理等）
-        HttpClient jdkHttpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10)) // 连接超时
-//                .timeout(Duration.ofSeconds(10)) // 响应超时
-                .followRedirects(HttpClient.Redirect.NORMAL) // 跟随重定向（和之前适配逻辑一致）
-                // 若需 Cookie 管理，添加 CookieHandler（和 JDK HttpClient 配置一致）
-                // .cookieHandler(new CookieManager(null, CookiePolicy.ACCEPT_ALL))
-                .build();
 
-        // 2. 创建 JDK HttpClient 适配工厂（Spring 5.3+ 提供）
-        JdkClientHttpRequestFactory requestFactory = new JdkClientHttpRequestFactory(jdkHttpClient);
 
         // 3. 构建 RestTemplate，绑定适配工厂
         var restTemplate = new RestTemplate(requestFactory);
