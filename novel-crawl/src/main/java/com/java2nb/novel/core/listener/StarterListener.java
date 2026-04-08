@@ -178,18 +178,23 @@ public class StarterListener implements ServletContextInitializer {
     }
 
     private CrawlConfig getCrawlConfig() {
-        var configStr = redisTemplate.opsForValue().get("crawl:single:update:config");
-        if (configStr == null) {
+        try {
+            var configStr = redisTemplate.opsForValue().get("crawl:single:update:config");
+            if (configStr == null) {
+                return new CrawlConfig();
+            }
+            return JSON.parseObject(configStr, CrawlConfig.class);
+        } catch (Exception e) {
+            log.error("redis error: {}", e.getMessage(), e);
             return new CrawlConfig();
         }
-        return JSON.parseObject(configStr, CrawlConfig.class);
     }
 
     @Getter
     @ToString
     @RequiredArgsConstructor
     static class CrawlConfig {
-        private final boolean enableUpdate = false;
+        private final boolean enableUpdate = true;
         private final long updateInterval = 120L;
 
         private final boolean enableSingle = true;
