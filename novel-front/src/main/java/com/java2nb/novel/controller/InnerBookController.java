@@ -66,7 +66,7 @@ public class InnerBookController extends BaseController {
      * 目录
      */
     @SneakyThrows
-    @RequestMapping("/book/indexList-{bookId}/all")
+    @RequestMapping("/indexList/{bookId}/all")
     public List<BookIndex> indexList(@PathVariable("bookId") Long bookId, Model model) {
         return bookService.queryIndexList(bookId, null, 1, null);
     }
@@ -75,7 +75,7 @@ public class InnerBookController extends BaseController {
      * 内容
      */
     @SneakyThrows
-    @RequestMapping("/book/{bookId}/{bookIndexId}/content")
+    @RequestMapping("/{bookId}/{bookIndexId}/content")
     public BookContent bookContent(@PathVariable("bookId") Long bookId, @PathVariable("bookIndexId") Long bookIndexId) {
         return bookContentServiceMap.get("db").queryBookContent(bookId, bookIndexId);
     }
