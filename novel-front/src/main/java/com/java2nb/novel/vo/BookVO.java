@@ -16,5 +16,13 @@ public class BookVO extends Book implements Serializable {
     @JsonFormat(timezone = "GMT+8", pattern = "MM/dd HH:mm")
     private Date lastIndexUpdateTime;
 
+    public BookSimpleVo toSimple() {
+        return BookSimpleVo.builder()
+                .id(getId())
+                .bookName(getBookName())
+                .bookDesc(getBookDesc())
+                .authorName(getAuthorName())
+                .build();
+    }
 
 }

@@ -198,7 +198,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public PageBean<?> searchByPage(BookSpVO params, int page, int pageSize) {
+    public PageBean<BookVO> searchByPage(BookSpVO params, int page, int pageSize) {
 
         if (params.getUpdatePeriod() != null) {
             long cur = System.currentTimeMillis();

@@ -46,7 +46,7 @@ public interface BookService {
      * @param pageSize 分页大小
      * @return 小说集合分页信息
      * */
-    PageBean<?> searchByPage(BookSpVO params, int page, int pageSize);
+    PageBean<BookVO> searchByPage(BookSpVO params, int page, int pageSize);
 
     /**
      * 查询小说分类列表

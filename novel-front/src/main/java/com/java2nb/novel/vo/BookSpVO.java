@@ -1,7 +1,10 @@
 package com.java2nb.novel.vo;
 
 import jakarta.validation.constraints.Pattern;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
@@ -10,6 +13,9 @@ import java.util.Date;
  * @author 11797
  */
 @Data
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
 public class BookSpVO {
 
     private String keyword;
