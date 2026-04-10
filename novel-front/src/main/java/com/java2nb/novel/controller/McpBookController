@@ -1,0 +1,86 @@
+package com.java2nb.novel.controller;
+
+import com.java2nb.novel.entity.Book;
+import com.java2nb.novel.entity.BookContent;
+import com.java2nb.novel.entity.BookIndex;
+import com.java2nb.novel.service.BookContentService;
+import com.java2nb.novel.service.BookService;
+import com.java2nb.novel.vo.BookSpVO;
+import io.github.xxyopen.model.page.PageBean;
+import io.github.xxyopen.model.page.builder.pagehelper.PageBuilder;
+import io.github.xxyopen.model.resp.RestResult;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @author mcp
+ */
+@Component
+@Slf4j
+public class McpBookController {
+
+    private final BookService bookService;
+    private final BookContentService bookContentService;
+
+    public McpBookController(BookService bookService,
+                             @@Qualifier("db") BookContentService contentService) {
+        this.bookService = bookService;
+        this.bookContentService = contentService;
+    }
+
+    @McpTool(name = "book_list", description = "查询数据列表（支持关键词搜索和分页）")
+    public RestResult<?> bookList(BookSpVO bookSP,
+                                      @RequestParam(value = "curr", defaultValue = "1") int page,
+                                      @RequestParam(value = "limit", defaultValue = "20") int pageSize,
+                                      HttpServletRequest request) {
+        return logRun("book_list", ()->bookService.searchByPage(bookSP, page, pageSize));
+    }
+
+
+    @McpTool(name = "book_detail_tool", description = "查询数据列表（支持关键词搜索和分页）")
+    public RestResult<Book> bookDetailTool(@PathVariable("id") Long id) {
+        return bookDetail(id);
+    }
+
+    @McpResource(uriTemplate = "books://index/{bookId}")
+    public RestResult<Book> bookDetailResource(@PathVariable("id") Long id) {
+        return bookDetail(id);
+    }
+
+    @McpTool(name = "book_index", description = "查询数据列表（支持关键词搜索和分页）")
+    public RestResult<PageBean<BookIndex>> indexList(Long bookId,
+                                                     @RequestParam(value = "curr", defaultValue = "1") int page,
+                                                     @RequestParam(value = "limit", defaultValue = "5") int pageSize,
+                                                     @RequestParam(value = "orderBy", defaultValue = "index_num desc") String orderBy) {
+        return RestResult.ok(PageBuilder.build(bookService.queryIndexList(bookId, orderBy, page, pageSize)));
+    }
+
+
+    @McpTool(name = "book_index_all", description = "查询数据列表（支持关键词搜索和分页）")
+    public List<BookIndex> indexList(@PathVariable("bookId") Long bookId, Model model) {
+        return bookService.queryIndexList(bookId, null, 1, null);
+    }
+
+    @McpTool(name = "book_index_content", description = "查询数据列表（支持关键词搜索和分页）")
+    public BookContent bookContent(@PathVariable("bookId") Long bookId, @PathVariable("bookIndexId") Long bookIndexId) {
+        return bookContentServiceMap.get("db").queryBookContent(bookId, bookIndexId);
+    }
+
+    private RestResult<Book> bookDetail(@PathVariable("id") Long id) {
+        return RestResult.ok(bookService.queryBookDetail(id));
+    }
+
+    private <R> R logRun(String tool, Supplier<R> runner) {
+        var beginTime = System.currentTimes();
+        R r = runner.get();
+        log.info("call tool:{}, time:{}, result:{}", tool, System.currentTimes() - beginTime, r);
+    }
+
+}
