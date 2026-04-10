@@ -60,5 +60,13 @@ spring:
       chat:
         options:
           model: deepseek-ai/DeepSeek-R1-0528-Qwen3-8B
+    mcp:
+      server:
+        protocol: stateless
+        name: book_mcp_server
+        version: 1.0.0
+        streamable-http:
+          mcp-endpoint: /mcp
+          keep-alive-interval: 30s
 
 
