@@ -62,12 +62,14 @@ spring:
           model: deepseek-ai/DeepSeek-R1-0528-Qwen3-8B
     mcp:
       server:
-        protocol: stateless
+        enabled: true
+        protocol: STREAMABLE
+        type: SYNC
         name: book_mcp_server
         version: 1.0.0
+        endpoint: /mcp
         streamable-http:
           mcp-endpoint: /mcp
           keep-alive-interval: 30s
-        enabled: true
 
 
