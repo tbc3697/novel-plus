@@ -22,6 +22,7 @@ public class BookVO extends Book implements Serializable {
                 .bookName(getBookName())
                 .bookDesc(getBookDesc())
                 .authorName(getAuthorName())
+                .wordCount(getWordCount())
                 .build();
     }
 
