@@ -18,7 +18,7 @@ public class BookVO extends Book implements Serializable {
 
     public BookSimpleVo toSimple() {
         return BookSimpleVo.builder()
-                .id(getId())
+                .bookId(getId())
                 .bookName(getBookName())
                 .bookDesc(getBookDesc())
                 .authorName(getAuthorName())

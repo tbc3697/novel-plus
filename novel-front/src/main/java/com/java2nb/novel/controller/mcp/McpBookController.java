@@ -1,24 +1,20 @@
 package com.java2nb.novel.controller.mcp;
 
-import com.java2nb.novel.entity.Book;
-import com.java2nb.novel.entity.BookContent;
 import com.java2nb.novel.entity.BookIndex;
 import com.java2nb.novel.service.BookContentService;
 import com.java2nb.novel.service.BookService;
+import com.java2nb.novel.vo.BookContentVo;
+import com.java2nb.novel.vo.BookIndexSimpleVo;
 import com.java2nb.novel.vo.BookSpVO;
 import com.java2nb.novel.vo.BookVO;
 import io.github.xxyopen.model.page.PageBean;
-import io.github.xxyopen.model.resp.RestResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springaicommunity.mcp.annotation.McpTool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -61,13 +57,32 @@ public class McpBookController {
     // }
 
     @McpTool(name = "book_index_all", description = "根据bookId获取该book的章节列表")
-    public List<BookIndex> indexList(@ToolParam(description = "bookId，必传") Long bookId) {
-        return logRun("book_index_all", ()->bookService.queryIndexList(bookId, null, 1, null));
+    public List<BookIndexSimpleVo> indexList(@ToolParam(description = "bookId，必传") Long bookId) {
+        return logRun("book_index_all", () -> {
+            List<BookIndex> list = bookService.queryIndexList(bookId, null, 1, null);
+            if (list != null || list.isEmpty()) {
+                return List.of();
+            }
+            return list.stream().map(bi -> {
+                return BookIndexSimpleVo.builder()
+                        .bookId(bi.getBookId())
+                        .bookIndexId(bi.getId())
+                        .indexName(bi.getIndexName())
+                        .wordCount(bi.getWordCount())
+                        .build();
+            }).toList();
+        });
     }
 
     @McpTool(name = "book_index_content", description = "根据章节ID获取该章节内容")
-    public BookContent bookContent(@ToolParam(description = "bookIndexId，不能为空") Long bookIndexId) {
-        return logRun("book_index_content", ()->bookContentService.queryBookContent(null, bookIndexId));
+    public BookContentVo bookContent(@ToolParam(description = "bookIndexId，不能为空") Long bookIndexId) {
+        return logRun("book_index_content", () -> {
+            var qr = bookContentService.queryBookContent(null, bookIndexId);
+            if (qr == null) {
+                return null;
+            }
+            return BookContentVo.builder().content(qr.getContent()).id(qr.getId()).indexId(qr.getIndexId()).build();
+        });
     }
 
     // private RestResult<Book> bookDetail(@PathVariable("id") Long id) {
