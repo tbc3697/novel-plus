@@ -60,7 +60,7 @@ public class McpBookController {
     public List<BookIndexSimpleVo> indexList(@ToolParam(description = "bookId，必传") Long bookId) {
         return logRun("book_index_all", () -> {
             List<BookIndex> list = bookService.queryIndexList(bookId, null, 1, null);
-            if (list != null || list.isEmpty()) {
+            if (list == null || list.isEmpty()) {
                 return List.of();
             }
             return list.stream().map(bi -> {
