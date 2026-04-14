@@ -41,8 +41,8 @@ public class McpBookController {
     @GetMapping("/book_list")
     @McpTool(name = "book_list", description = "查询book列表（支持关键词搜索和分页，关键字可以匹配名称或者作者）")
     public PageBean<?> bookList(@ToolParam(description = "检索关键字，可以模糊匹配书籍名称或者作者名称，允许为空", required = false) @RequestParam(required = false) String keyword,
-                                @ToolParam(description = "页码,允许不传，不传默认是1", required = false) @RequestParam(required = false) int page,
-                                @ToolParam(description = "每次条数,允许不传，默认是20", required = false) @RequestParam(required = false) int pageSize) {
+                                @ToolParam(description = "页码,允许不传，不传默认是1", required = false) @RequestParam(required = false) Integer page,
+                                @ToolParam(description = "每次条数,允许不传，默认是20", required = false) @RequestParam(required = false) Integer pageSize) {
         var pageNum = getIntOrDef(page, 1);
         var limit = getIntOrDef(pageSize, 20);
         var queryResult = bookService.searchByPage(BookSpVO.builder().keyword(keyword).build(), pageNum, limit);
@@ -80,6 +80,7 @@ public class McpBookController {
         });
     }
 
+    @GetMapping("/book_index_content")
     @McpTool(name = "book_index_content", description = "根据章节ID获取该章节内容")
     public BookContentVo bookContent(@ToolParam(description = "bookIndexId，不能为空") @RequestParam Long bookIndexId) {
         return logRun("book_index_content", () -> {
@@ -102,8 +103,8 @@ public class McpBookController {
         return r;
     }
 
-    private int getIntOrDef(int value, int def) {
-        return value == 0 ? def : value;
+    private int getIntOrDef(Integer value, int def) {
+        return value == null || value == 0 ? def : value;
     }
 
 }
