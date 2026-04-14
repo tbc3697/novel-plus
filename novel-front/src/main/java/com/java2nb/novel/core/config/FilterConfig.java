@@ -1,6 +1,7 @@
 package com.java2nb.novel.core.config;
 
 import com.java2nb.novel.core.filter.LoggingFilter;
+import com.java2nb.novel.core.filter.McpLoggingInterceptor;
 import com.java2nb.novel.core.filter.NovelFilter;
 import com.java2nb.novel.core.filter.XssFilter;
 import jakarta.servlet.DispatcherType;
@@ -9,6 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -18,7 +21,7 @@ import java.util.Map;
  * @author Administrator
  */
 @Configuration
-public class FilterConfig{
+public class FilterConfig implements WebMvcConfigurer {
 
     @Value("${pic.save.path}")
     private String picSavePath;
@@ -31,6 +34,19 @@ public class FilterConfig{
 
     @Value("${xss.urlPatterns}")
     private String urlPatterns;
+
+    private final McpLoggingInterceptor mcpLoggingInterceptor;
+
+    public FilterConfig(McpLoggingInterceptor mcpLoggingInterceptor) {
+        this.mcpLoggingInterceptor = mcpLoggingInterceptor;
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(mcpLoggingInterceptor)
+                .addPathPatterns("/mcp/**")
+                .order(1);
+    }
 
     @Bean
     public FilterRegistrationBean<LoggingFilter> logFilterRegister() {

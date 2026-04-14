@@ -20,6 +20,10 @@ public class LoggingFilter implements Filter {
 
         // 获取请求基本信息
         String uri = httpRequest.getRequestURI();
+        if (uri.contains("/mcp")) {
+            chain.doFilter(request, response);
+            return;
+        }
         String method = httpRequest.getMethod();
         String queryString = httpRequest.getQueryString();
 
