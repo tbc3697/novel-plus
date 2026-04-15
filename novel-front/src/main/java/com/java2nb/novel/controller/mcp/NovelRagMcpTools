@@ -1,0 +1,15 @@
+@Service
+public class NovelRagMcpTools {
+
+    private final NovelRagMcpTool novelRagMcpTool;   // 你原来的异步 RAG 服务
+
+    public NovelRagMcpTools(NovelRagMcpTool novelRagMcpTool) {
+        this.novelRagMcpTool = novelRagMcpTool;
+    }
+
+    @McpTool(name = "query_novel_rag", description = "根据自然语言查询小说库，返回最相关章节（支持流式返回）")
+    public SseEmitter queryNovelRag(@McpToolParam(description = "查询关键词") String query,
+                                    @McpToolParam(description = "返回数量，默认5") Integer topK) {
+        return novelRagMcpTool.queryNovelRagAsync(query, topK != null ? topK : 5);
+    }
+}
