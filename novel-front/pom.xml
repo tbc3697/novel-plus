@@ -79,6 +79,23 @@
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-mcp-server-webmvc</artifactId>
         </dependency>
+        <!-- Spring AI 原生 Chroma Vector Store（RAG 核心） -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-chroma-store-spring-boot-starter</artifactId>
+            <version>1.0.0</version>   <!-- 或你当前 Spring AI 版本一致的最新版 -->
+        </dependency>
+        <!-- LangChain4j Chroma + Spring Boot Starter -->
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-chroma</artifactId>
+            <version>0.36.0</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.langchain4j</groupId>
+            <artifactId>langchain4j-spring-boot-starter</artifactId>
+            <version>0.36.0</version>
+        </dependency>
     </dependencies>
 
     <build>

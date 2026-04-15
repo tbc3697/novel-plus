@@ -71,5 +71,21 @@ spring:
         streamable-http:
           mcp-endpoint: /mcp
           keep-alive-interval: 30s
+    # ================== Chroma 向量库连接配置（重点！） ==================
+    vectorstore:
+      chroma:
+        client:
+          host: http://192.168.31.2     # ← 必须改成 Mac Mini 的真实 IP（不是 localhost！）
+          port: 8000                           # Chroma HTTP Server 端口
+        # 可选配置
+        collection-name: novels                # 跟你 Python 脚本里用的 collection 名保持一致（默认是 "SpringAiCollection"）
+        initialize-schema: false               # 你的向量库已经建好，关闭自动建表
 
+    # ================== 嵌入模型配置（bge-m3） ==================
+    embedding:
+      model:
+        provider: ollama
+        ollama:
+          base-url: http://192.168.31.13:11434     # 或你的 Ollama 地址
+          model-name: bge-m3                   # 和你索引时用的完全一致
 
