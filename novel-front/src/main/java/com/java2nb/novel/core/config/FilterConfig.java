@@ -43,9 +43,9 @@ public class FilterConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(mcpLoggingInterceptor)
-                .addPathPatterns("/mcp/**")
-                .order(1);
+//        registry.addInterceptor(mcpLoggingInterceptor)
+//                .addPathPatterns("/mcp/**")
+//                .order(1);
     }
 
     @Bean

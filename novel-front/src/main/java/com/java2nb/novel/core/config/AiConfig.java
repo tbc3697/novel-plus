@@ -2,8 +2,13 @@ package com.java2nb.novel.core.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.ai.ollama.OllamaEmbeddingModel;
+import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.client.RestClient;
 
@@ -31,8 +36,21 @@ public class AiConfig {
     }
 
     @Bean
+    @Primary
+    public ChatModel chatModel(OpenAiChatModel model) {
+        return model;
+    }
+
+    @Bean
     public ChatClient chatClient(ChatClient.Builder chatClientBuilder) {
         return chatClientBuilder.build();
     }
+
+    @Bean
+    @Primary
+    public EmbeddingModel embeddingModel(OllamaEmbeddingModel model) {
+        return model;
+    }
+
 
 }

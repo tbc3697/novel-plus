@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.util.ContentCachingRequestWrapper;
+import org.springframework.web.util.WebUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,7 +35,8 @@ public class McpLoggingInterceptor implements HandlerInterceptor {
         REQUEST_START_TIMES.put(requestId, startTime);
 
         String method = request.getMethod();
-        String requestBody = extractRequestBody(request);
+        ContentCachingRequestWrapper wrapper = WebUtils.getNativeRequest(request, ContentCachingRequestWrapper.class);
+        String requestBody = extractRequestBody(wrapper);
         String summary = String.format("%s %s | Body: %s", method, uri, truncate(requestBody, 500));
         REQUEST_SUMMARIES.put(requestId, summary);
 
@@ -73,14 +76,15 @@ public class McpLoggingInterceptor implements HandlerInterceptor {
         return "MCP-" + System.currentTimeMillis() + "-" + (int) (Math.random() * 10000);
     }
 
-    private String extractRequestBody(HttpServletRequest request) {
+    private String extractRequestBody(ContentCachingRequestWrapper request) {
         try {
+
             String contentType = request.getContentType();
             if (contentType == null || !contentType.toLowerCase().contains("application/json")) {
                 return "[Non-JSON]";
             }
 
-            byte[] bodyBytes = StreamUtils.copyToByteArray(request.getInputStream());
+            byte[] bodyBytes = request.getContentAsByteArray();
             if (bodyBytes.length == 0) {
                 return "[Empty]";
             }
