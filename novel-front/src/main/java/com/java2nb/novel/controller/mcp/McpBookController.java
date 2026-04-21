@@ -39,7 +39,7 @@ public class McpBookController {
         this.bookContentService = contentService;
     }
 
-    @GetMapping("/book_list")
+    @GetMapping(value = "/book_list", produces = MediaType.APPLICATION_JSON_VALUE)
     @McpTool(name = "book_list", description = "查询book列表（支持关键词搜索和分页，关键字可以匹配名称或者作者）")
     public PageBean<?> bookList(@ToolParam(description = "检索关键字，可以模糊匹配书籍名称或者作者名称，允许为空", required = false) @RequestParam(required = false) String keyword,
                                 @ToolParam(description = "页码,允许不传，不传默认是1", required = false) @RequestParam(required = false) Integer page,
@@ -82,7 +82,7 @@ public class McpBookController {
         });
     }
 
-    @GetMapping("/book_index_content")
+    @GetMapping(value = "/book_index_content", produces = MediaType.APPLICATION_JSON_VALUE)
     @McpTool(name = "book_index_content", description = "根据章节ID获取该章节内容")
     public BookContentVo bookContent(@ToolParam(description = "bookIndexId，不能为空") @RequestParam String bookIndexId) {
         Long bookIndexIdLong = Long.parseLong(bookIndexId);
