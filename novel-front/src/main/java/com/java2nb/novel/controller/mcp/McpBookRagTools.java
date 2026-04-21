@@ -14,11 +14,11 @@ import java.util.List;
 
 @RestController
 @Slf4j
-public class NovelRagMcpTools {
+public class McpBookRagTools {
     private final VectorStore vectorStore;  // ChromaVectorStore（已自动注入）
 
 
-    public NovelRagMcpTools(VectorStore vectorStore) {
+    public McpBookRagTools(VectorStore vectorStore) {
         this.vectorStore = vectorStore;
     }
 

@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springaicommunity.mcp.annotation.McpTool;
 import org.springframework.ai.tool.annotation.ToolParam;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -61,11 +62,12 @@ public class McpBookController {
     //     return bookDetail(bookId);
     // }
 
-    @GetMapping("/book_index_all")
+    @GetMapping(value = "/book_index_all", produces = MediaType.APPLICATION_JSON_VALUE)
     @McpTool(name = "book_index_all", description = "根据bookId获取该book的章节列表")
-    public List<BookIndexSimpleVo> indexList(@ToolParam(description = "bookId，必传") @RequestParam Long bookId) {
+    public List<BookIndexSimpleVo> indexList(@ToolParam(description = "bookId，必传") @RequestParam String bookId) {
+        Long bookIdLong = Long.parseLong(bookId);
         return logRun("book_index_all", () -> {
-            List<BookIndex> list = bookService.queryIndexList(bookId, null, 1, null);
+            List<BookIndex> list = bookService.queryIndexList(bookIdLong, null, 1, null);
             if (list == null || list.isEmpty()) {
                 return List.of();
             }
@@ -82,9 +84,10 @@ public class McpBookController {
 
     @GetMapping("/book_index_content")
     @McpTool(name = "book_index_content", description = "根据章节ID获取该章节内容")
-    public BookContentVo bookContent(@ToolParam(description = "bookIndexId，不能为空") @RequestParam Long bookIndexId) {
+    public BookContentVo bookContent(@ToolParam(description = "bookIndexId，不能为空") @RequestParam String bookIndexId) {
+        Long bookIndexIdLong = Long.parseLong(bookIndexId);
         return logRun("book_index_content", () -> {
-            var qr = bookContentService.queryBookContent(null, bookIndexId);
+            var qr = bookContentService.queryBookContent(null, bookIndexIdLong);
             if (qr == null) {
                 return null;
             }
